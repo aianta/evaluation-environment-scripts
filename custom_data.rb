@@ -2010,6 +2010,7 @@ Steps:
     AgentTask.modules << _module
 
     page_id = _module.content_tags.select{|i| i.content_type == 'WikiPage'}.first.content_id
+    item_id = _module.content_tags.select{|i| i.content_id == page_id}.first.id
     page = course.pages.select{|p| p.id == page_id}.first
     
     AgentTask.pages << page
@@ -2019,7 +2020,7 @@ Steps:
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Module ID", _module.id)
-    task.update_answer_key("Item ID", page_id) # TODO: Verify this. 
+    task.update_answer_key("Item ID", item_id) # TODO: Verify this. 
   }
 
   tasks << task
@@ -2068,6 +2069,12 @@ Steps:
 
   task = AgentTask.new({
     id: 'e0cfbef6-1383-463e-ac40-db871e962295',
+    evaluation_parameters: ["Group ID", "Group Name"],
+    methods: ["PUT"],
+    paths: ["/api/v1/groups/[[Group ID]]"], 
+    request_kvs: [{
+    "name": "[[Group Name]]"
+    }],
     parameterized_text: 'Task: As the student group leader of "[[Group 1]]" in the "[[Course]]" course, change your group\'s name to "[[Group 2]]".'
   })
 
@@ -2105,12 +2112,22 @@ Steps:
     task.update_initalized_text("Group 1", group.name)
     task.update_initalized_text("Group 2", new_group_name)
 
+    task.update_answer_key("Group ID", group.id)
+    task.update_answer_key("Group Name", new_group_name)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'bc69c1dc-3ccc-4cef-80ec-ed2a5d931c5e',
+    evaluation_parameters: ["Group ID", "User ID"],
+    methods: ["POST"], 
+    paths: ["/api/v1/groups/[[Group ID]]"],
+    request_kvs: [{
+    "_method": "PUT",
+    "members": "[[_array_not_contains='[[User ID]]']]"
+    }],
     parameterized_text: 'Task: As the student group leader of "[[Group]]" in the "[[Course]]" course, remove the member named "[[User]]" from the group. Submit your changes.'
   })
 
@@ -2131,6 +2148,9 @@ Steps:
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Group", group.name)
     task.update_initalized_text("User", user_to_remove.name )
+
+    task.update_answer_key("Group ID", group.id)
+    task.update_answer_key("User ID", user_to_remove.id)
 
   }
 
@@ -2179,6 +2199,13 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
 
   task = AgentTask.new({
     id: 'c9819826-9891-4b9a-824b-f94f91a6598b',
+    evaluation_parameters: ["Course ID", "Assignment ID"],
+    methods: ["POST"],
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[ANY]]"],
+    request_kvs: [{
+    "_type":"form data",
+    "submission[comment]": "Great+job+but+consider+adding+more+sources+to+support+your+arguments."
+    }],
     parameterized_text: 'Task: Complete a peer review for the assignment "[[Assignment]]" in the course "[[Course]]" by leaving the following comment in the comment sidebar: "Great job but consider adding more sources to support your arguments." Submit your assessment to finish the peer review.'
   })
 
@@ -2214,12 +2241,24 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Assignment", assignment.title)
+
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Assignment ID", assignment.id)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: '42ad8db4-826a-414a-9ad6-b5c9abd93078',
+    evaluation_parameters: ["Discussion Reply ID"],
+    methods: ["POST"],
+    paths: ["/api/graphql"],
+    request_kvs: [{
+    "operationName": "UpdateDiscussionEntryParticipant",
+    "rating": "liked",
+    "discussionEntryId": "[[Discussion Reply ID]]"
+    }],
     parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]," locate the reply by student "[[User]]" and click the Like icon to like this reply.'
   })
 
@@ -2233,11 +2272,14 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     end
     AgentTask.discussions << discussion
 
-    user = discussion.discussion_entries.first.user
+
+    reply = discussion.discussion_entries.sample
 
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Discussion", discussion.title)
-    task.update_initalized_text("User", user.name)
+    task.update_initalized_text("User", reply.user.name)
+
+    task.update_answer_key("Discussion Reply ID", reply.id)
 
   }
 
@@ -2752,6 +2794,11 @@ Steps:
 
   task = AgentTask.new({
     id: 'd6ac9877-e256-4487-86cc-2bb0b085c804',
+    evaluation_parameters: ["Course ID", "Announcement Title"],
+    methods: ["GET", "PUT"],
+    paths: ["/api/v1/courses/[[Course ID]]/discussion_topics?search_term=[[Announcement Title]]",
+      "/api/v1/courses/[[Course ID]]/discussion_topics/read_all"],
+    request_kvs: [{},{}],
     parameterized_text: 'Task: In the course "[[Course]]" use the search field in the Announcements Index Page to find the announcement titled "[[Announcement]]". Then, mark all announcements as read using the "Mark All as Read" button.'
   })
 
@@ -2769,12 +2816,22 @@ Steps:
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Announcement", announcement.title)
 
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Announcement Title", announcement.title)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'd8f661f0-6bcc-4778-8b5e-ed716f425cd8',
+    evaluation_parameters: ["Course ID", "Assignment ID"],
+    methods: ["POST"],
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions"],
+    request_kvs: [{
+    "_type": "form data",
+    "submission[body]": "<p>The+most+interesting+concept+I+learned+this+week+was+cognitive+dissonance.</p>"
+    }],
     parameterized_text: 'Task: Submit a text entry for the [[Assignment]] assignment in the course "[[Course]]" by entering the text "The most interesting concept I learned this week was cognitive dissonance."
 
 Steps:
@@ -2801,6 +2858,9 @@ Steps:
 
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Assignment", assignment.title)
+
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Assignment ID", assignment.id)
 
   }
 
@@ -2849,6 +2909,12 @@ Steps:
 
   task = AgentTask.new({
     id: 'e070c0de-41d2-42aa-8a7c-c93f98fdc4c4',
+    evaluation_parameters: ["Group ID", "Discussion ID"],
+    methods: ["PUT"],
+    paths: ["/api/v1/groups/[[Group ID]]/discussion_topics/[[Discussion ID]]"],
+    request_kvs: [{
+    "message": "<p>Our first group meeting will be held on Friday at 3 PM in the atrium.</p>"
+    }],
     parameterized_text: 'Task: Edit the announcement titled "[[Announcement]]" in the group [[Group]] in the [[Course]] course by changing the content to "Our first group meeting will be held on Friday at 3 PM in the atrium." Then, click the Save button to save your changes.'
   })
 
@@ -2869,12 +2935,21 @@ Steps:
     task.update_initalized_text("Group", group.name)
     task.update_initalized_text("Announcement", announcement.title)
 
+    task.update_answer_key("Group ID", group.id)
+    task.update_answer_key("Discussion ID", announcement.id)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'e178ca11-ad42-4c2e-811c-cb3c25177dc8',
+    evaluation_parameters: ["Embed Code", "Group ID", "Page Slug"],
+    methods: ["PUT"],
+    paths: ["/api/v1/groups/[[Group ID]]/pages/[[Page Slug]]"],
+    request_kvs: [{
+    "body": "[[_includes='[[Embed Code]]']]"
+    }],
     parameterized_text: 'Task:  
 Embed a YouTube video into the "[[Page]]" page in the "[[Group]]" group, using the following embedding snippet:
 
@@ -2898,12 +2973,22 @@ then save the changes.'
 
     task.update_initalized_text("Group", group.name)
     task.update_initalized_text("Page", page.title)
+
+    task.update_answer_key("Group ID", group.id)
+    task.update_answer_key("Page Slug", page.url)
+    task.update_answer_key("Embed Code", 'https://www.youtube.com/embed/m5a4phGJsRY?si=sCq1ix4e4OtMdHUg')
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'e476f98d-e1e1-4fb7-b8d4-2b0bc832ff69',
+    evaluation_parameters: ["Group ID"],
+    methods: ["POST"],
+    paths: ["/api/v1/groups/[[Group ID]]/memberships/self"],
+    request_kvs: [{
+      "_method": "DELETE"
+      }],
     parameterized_text: 'Task: Leave the group "[[Group]]" in the course "[[Course]]" using the People page in Canvas.'
   })
 
@@ -2921,12 +3006,20 @@ then save the changes.'
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Group", group.name)
 
+    task.update_answer_key("Group ID", group.id)
+
   }
   
   tasks << task
 
   task = AgentTask.new({
     id: 'e5f9684d-4b57-45c7-81e3-0d065f75545b',
+    evaluation_parameters: ["User ID"],
+    methods: ["PUT"],
+    paths: ["/api/v1/users/[[User ID]]/settings"],
+    request_kvs: [{
+    "manual_mark_as_read": true
+    }],
     parameterized_text: 'Task: In your "[[Course]]" course, change your discussion settings so that you must manually mark discussion replies as read.'
   })
 
@@ -2934,12 +3027,19 @@ then save the changes.'
 
     task.update_initalized_text("Course", course.course.name)
 
+    task.update_answer_key("User ID", course.logged_in_user.id)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'f5e1c597-c2ad-45f6-aa7c-7b7dee0d3675',
+    evaluation_parameters: ["Group ID"],
+    methods: ["POST"],
+    paths: ["/api/v1/groups/[[Group ID]]/memberships"],
+    request_kvs: [{
+    "_method": "POST"}],
     parameterized_text: 'Task: In the course "[[Course]]," view all available groups, and join the self sign-up group named "[[Group]]."'
   })
 
@@ -2957,12 +3057,19 @@ then save the changes.'
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Group", group.name)
 
+    task.update_answer_key("Group ID", group.id)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'f9e0dc04-ac1e-4189-8c58-91a66d561e06',
+    evaluation_parameters: ["Course ID", "Quiz ID", "Last Question Index"],
+    methods: ["POST"],
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
+    request_kvs: [{
+    "question_[[Last Question Index]]": "[[ANY]]"}],
     parameterized_text: 'Task: Take the "[[Quiz]]" in the "[[Course]]" course, answer all questions, and submit the quiz.
 
 Instructions:
@@ -2991,12 +3098,23 @@ Instructions:
     task.update_initalized_text('Course', course.course.name)
     task.update_initalized_text('Quiz', quiz.title)
 
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Quiz ID", quiz.id)
+    task.update_answer_key("Last Question Index", quiz.quiz_questions.last.id) # TODO: Verify this... it might actually be the question #? 
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'fa70e65c-16fb-4d03-9041-bcf07cf6ae02',
+    evaluation_parameters: ["Discussion ID", "User ID"],
+    methods: ["POST"],
+    paths: ["/api/v1/planner/overrides"],
+    request_kvs: [{
+    "plannable_id": "[[Discussion ID]]",
+    "user_id": "[[User ID]]"
+    }],
     parameterized_text: 'Task: In the course "[[Course]]," find the announcement titled "[[Announcement]]" in your Course Activity Stream and remove this notification from your activity stream.'
   })
 
@@ -3013,6 +3131,9 @@ Instructions:
 
     task.update_initalized_text('Course', course.course.name)
     task.update_initalized_text('Announcement', announcement.title)
+
+    task.update_answer_key("Discussion ID", announcement.id)
+    task.update_answer_key("User ID", course.logged_in_user.id)
 
   }
 
@@ -3097,6 +3218,10 @@ Instructions:
 
   task = AgentTask.new({
     id: 'fa9d33b1-09e0-43af-996a-74f9acbee197',
+    evaluation_parameters: ["Course ID", "Quiz ID"],
+    methods: ["POST"],
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/take"],
+    request_kvs: [{}],
     parameterized_text: 'Task: Resume the "[[Quiz]]" in the "[[Course]]" course that you previously started but did not finish. 
 
 Steps:
@@ -3119,12 +3244,19 @@ Steps:
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Quiz", quiz.title)
 
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Quiz ID", quiz.id)
+
   }
 
   tasks << task
 
   task = AgentTask.new({
     id: 'f36e03d8-3c1a-4223-ad61-8aca0b4546fb',
+    evaluation_parameters: ["Course ID", "Quiz ID"],
+    methods: ["POST"],
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
+    request_kvs: [{}],
     parameterized_text: 'Task: Submit the "[[Survey]]" in the "[[Course]]" course by answering all questions and submitting your responses.
 
 Steps:
@@ -3149,6 +3281,9 @@ Steps:
 
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Survey", quiz.title)
+
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Quiz ID", quiz.id)
 
   }
 
@@ -3253,6 +3388,12 @@ Steps:
 
   task = AgentTask.new({
     id: 'ff0f349b-4812-41ae-8b85-ae6c2899db2c',
+    evaluation_parameters: ["Course ID", "Item ID", "Module ID", "Assignment Set ID"],
+    methods: ["GET","POST"],
+    paths: ["/courses/[[Course ID]]/modules/items/[[Item ID]]/choose","/api/v1/courses/[[Course ID]]/modules/[[Module ID]]/items/[[Item ID]]/select_mastery_path"],
+    request_kvs: [{},{
+    "assignment_set_id": "[[Assignment Set ID]]"
+    }],
     parameterized_text: 'Task: In the "[[Course]]" course, navigate to the "[[Module]]" module, click the "Choose Assignment Group" link, and select the assignment titled "[[Assignment]]" by clicking the Select button.'
   })
 
@@ -3281,26 +3422,27 @@ Steps:
       return 
     end
 
-    m.add_item(id: assignment_with_grade.id, type: "assignment")
+    tag = m.add_item(id: assignment_with_grade.id, type: "assignment")
     # m.add_item(id: assignment_option_1.id, type: "assignment")
     # m.add_item(id: assignment_option_2.id, type: "assignment")
+
+    assignment_set_1 = ConditionalRelease::AssignmentSet.new(
+            assignment_set_associations: [
+              ConditionalRelease::AssignmentSetAssociation.new(assignment_id: assignment_option_1.id)
+            ]
+          )
+    
+    assignment_set_2 = ConditionalRelease::AssignmentSet.new(
+            assignment_set_associations: [
+              ConditionalRelease::AssignmentSetAssociation.new(assignment_id: assignment_option_2.id)
+            ]
+          )
 
     ranges = [
       ConditionalRelease::ScoringRange.new(
         lower_bound:0.0,
         upper_bound:1.0,
-        assignment_sets: [
-          ConditionalRelease::AssignmentSet.new(
-            assignment_set_associations: [
-              ConditionalRelease::AssignmentSetAssociation.new(assignment_id: assignment_option_1.id)
-            ]
-          ),
-          ConditionalRelease::AssignmentSet.new(
-            assignment_set_associations: [
-              ConditionalRelease::AssignmentSetAssociation.new(assignment_id: assignment_option_2.id)
-            ]
-          )
-        ]
+        assignment_sets: [ assignment_set_1, assignment_set_2 ]
       )
     ]
 
@@ -3309,9 +3451,21 @@ Steps:
     m.reload
     course.course.reload
 
+    selected_option = [assignment_option_1, assignment_option_2].sample
+
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Module", m.name)
-    task.update_initalized_text("Assignment", [assignment_option_1, assignment_option_2].sample.title)
+    task.update_initalized_text("Assignment", selected_option.title)
+
+    task.update_answer_key("Course ID", course.course.id)
+    task.update_answer_key("Item ID", tag.id)
+    task.update_answer_key("Module ID", m.id)
+
+    if selected_option == assignment_option_1 
+      task.update_answer_key("Assignment Set ID", assignment_set_1.id)
+    else
+      task.update_answer_key("Assignment Set ID", assignment_set_2.id)
+    end
 
   }
 

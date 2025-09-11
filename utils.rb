@@ -180,7 +180,11 @@ class AgentTask
     end
 
     json_string = @answer_key.to_json
-    json_string = json_string.gsub(/\[\[#{term}\]\]/, replacement.to_s)
+    if term == 'Assignment Set ID'
+      json_string = json_string.gsub(/"\[\[#{term}\]\]"/, replacement.to_s)
+    else
+      json_string = json_string.gsub(/\[\[#{term}\]\]/, replacement.to_s)
+    end
     @answer_key = JSON.parse(json_string)
   end
 
