@@ -134,6 +134,7 @@ def generate_test_environment
 
     }
 
+
     # Fetch quiz test data and create quizzes
     quiz_data = course_data["quizzes"]
     quiz_data.each { |quiz|
@@ -147,7 +148,8 @@ def generate_test_environment
           :description => quiz["description"],
           :due_at => quiz["due_at"],
           :submission_types => ['online_quiz'],
-          :workflow_state => quiz["workflow_state"]
+          :workflow_state => quiz["workflow_state"],
+          :user=>_course.logged_in_user
         })
 
         
@@ -341,6 +343,8 @@ def generate_test_environment
 
       }
 
+
+   
     # Fetch group category test data and create these in anticipation of creating groups
     if course_data["group_categories"]
       course_data["group_categories"].each {|group_category|
@@ -919,6 +923,9 @@ def create_task_instances(test_course)
   task.populate(test_course) {|course, task|
 
     discussion = course.discussions.select{|d| !AgentTask.discussions.include? d}.first
+
+    # Ensure the logged in user is NOT subscribed to this discussion topic so that the task makes sense.
+    discussion.unsubscribe(course.logged_in_user)
     
     if discussion.nil? 
       puts "Could not find discussion for task #{task.id}"
@@ -1004,7 +1011,7 @@ def create_task_instances(test_course)
     used_quiz_names = []
     AgentTask.quizzes.each {|q| used_quiz_names << q.title}
 
-    quiz = course_data["quizzes"].select {|q| (!used_quiz_names.include? q["title"]) && (q["questions"].length >= 2) && (!q["questions"].select{|question| question["question_type"] == "short_answer_question"}.first.nil?)}.first
+    quiz = course_data["quizzes"].select {|q| (!used_quiz_names.include? q["title"]) && (q["questions"].length >= 2) && (!q["questions"].select{|question| question["question_type"] == "short_answer_question"}.first.nil?) && (!q["one_question_at_a_time"])}.first
 
     if quiz.nil?
       puts "Could not find quiz for task #{task.id}"
@@ -1027,7 +1034,7 @@ def create_task_instances(test_course)
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Quiz ID", _quiz.id)
-    task.update_answer_key("Question Index", (question_index + 1)) # TODO: I think this is correct, but verify.
+    task.update_answer_key("Question Index", _quiz.quiz_questions[question_index].id) # TODO: I think this is correct, but verify.
     task.update_answer_key("Answer", answer["text"])
 
 
@@ -1576,6 +1583,10 @@ Steps to complete:
     AgentTask.discussions << discussion
 
     reply = discussion.discussion_entries.select{|e| course.classmates.include? e.user}.first
+    
+    # Ensure the read state of the reply is 'read' so the task makes sense
+    reply.change_read_state('read', course.logged_in_user)
+
     classmate = reply.user
 
     task.update_initalized_text("Course", course.course.name)
@@ -3100,7 +3111,7 @@ Instructions:
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Quiz ID", quiz.id)
-    task.update_answer_key("Last Question Index", quiz.quiz_questions.last.id) # TODO: Verify this... it might actually be the question #? 
+    task.update_answer_key("Last Question Index", quiz.quiz_questions.last.id) # Verify this... it might actually be the question #? Nope, question id is correct. 
 
   }
 
