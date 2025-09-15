@@ -204,7 +204,7 @@ class AgentTask
     
     result = {}
     result[:id] = @id
-    result[:paremeterized_text] = @parameterized_text
+    result[:parameterized_text] = @parameterized_text
     result[:parameters] = @mapping.keys
     result[:mapping] = @mapping
     result[:instance_text] = @instance_text

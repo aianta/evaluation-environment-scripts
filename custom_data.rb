@@ -628,7 +628,7 @@ def aggregate_task_objects(tasks)
         task_entry[:answer_type] = task[:answer_type]
       end
 
-      task_entry[:paremeterized_text] = task[:paremeterized_text]
+      task_entry[:parameterized_text] = task[:parameterized_text]
       task_entry[:parameters] = task[:parameters]
       task_entry[:instances] = []
       
@@ -2386,7 +2386,7 @@ Steps:
   task = AgentTask.new({
     id:'72966af5-5445-4226-8236-e94352fb514b',
     type: 'Information Seeking',
-    ansewer_type: 'Numeric',
+    answer_type: 'Numeric',
     parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]". How many replies are there for this discussion?'
   })
 
