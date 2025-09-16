@@ -165,6 +165,10 @@ class AgentTask
       puts "The populate method requires an object of the TestCourse class. Instead got test_course -> #{test_course.class}"
     end
 
+    # Populate the credentials required to complete the task instance
+    @instance_username = test_course.logged_in_user.email
+    @instance_password = test_course.logged_in_user_password
+
     yield test_course, self
 
   end
@@ -208,6 +212,8 @@ class AgentTask
     result[:parameters] = @mapping.keys
     result[:mapping] = @mapping
     result[:instance_text] = @instance_text
+    result[:instance_username] = @instance_username
+    result[:instance_password] = @instance_password
     result[:type] = @type
     if result[:type] == 'Information Seeking'
       result[:answer_type] = @answer_type
@@ -228,6 +234,7 @@ class TestCourse
   attr_reader :root_account
   attr_reader :course
   attr_reader :logged_in_user
+  attr_reader :logged_in_user_password
   attr_reader :unused_group_names
   attr_reader :unused_announcements
   attr_reader :unused_discussions
@@ -328,6 +335,7 @@ The student account will be assumed to be the logged in user for this course.
     @user.accept_terms
     @students << @user
     @logged_in_user = @user
+    @logged_in_user_password = data[:student_password]
 
     @course.root_account.enable_feature! :discussions_reporting
 

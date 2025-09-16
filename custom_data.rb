@@ -639,6 +639,8 @@ def aggregate_task_objects(tasks)
     instance_data = {}
     instance_data[:id] = SecureRandom.uuid
     instance_data[:instance_text] = task[:instance_text]
+    instance_data[:instance_username] = task[:instance_username]
+    instance_data[:instance_password] = task[:instance_password]
     instance_data[:mapping] = task[:mapping]
 
     if task[:answer_key]
