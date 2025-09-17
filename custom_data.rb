@@ -2643,7 +2643,7 @@ Steps:
 
   task = AgentTask.new({
     id: '9b7f10f1-60fe-4bbe-968c-9b828cdbeb8f',
-    evaluation_parameters: ["Group ID", "Page Slug"],
+    evaluation_parameters: ["Group ID", "Page Slug", "Page Title"],
     methods: ["PUT"],
     paths: ["/api/v1/groups/[[Group ID]]/pages/[[Page Slug]]"],
     request_kvs: [{
@@ -2679,6 +2679,7 @@ Steps:
 
     task.update_answer_key("Group ID", group.id)
     task.update_answer_key("Page Slug", page.url)
+    task.update_answer_key("Page Title", page.title)
     
   }
 
