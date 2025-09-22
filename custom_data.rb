@@ -825,7 +825,7 @@ def create_task_instances(test_course)
     type: 'Side-effect',
     evaluation_parameters: ["Course ID", "User 1 ID", "User 2 ID"],
     methods: ['POST'],
-    paths: ['["/courses/[[Course ID]]/groups"]'],
+    paths: ["/courses/[[Course ID]]/groups"],
     request_kvs: [{
       "join_level": "invitation_only",
       "invitees": ["[[User 1 ID]]", "[[User 2 ID]]"]
@@ -1363,7 +1363,7 @@ Steps to complete:
     request_kvs: [{
     "operationName": "CreateDiscussionEntry",
     "discussionTopicId": "[[Discussion ID]]",
-    "message": "<p>I believe that local communities can play a significant role in addressing climate change by implementing sustainable practices.</p>"
+    "message": "[[_starts_with='<p>I believe that local communities can play a significant role in addressing climate change by implementing sustainable practices.</p>']]"
     }],
     parameterized_text: 'Task: Reply to the main discussion in the "[[Discussion]]" discussion in the "[[Course]]" course with the following text: "I believe that local communities can play a significant role in addressing climate change by implementing sustainable practices."'
   })
@@ -2358,7 +2358,7 @@ Steps:
     request_kvs: [{
       "operationName": "CreateDiscussionEntry",
       "discussionTopicId": "[[Discussion ID]]",
-      "message": "<p>Thank you for the information! Looking forward to this semester.</p>"
+      "message": "[[_starts_with='<p>Thank you for the information! Looking forward to this semester.</p>']]"
     }],
     parameterized_text: 'Task: Reply to the announcement titled "[[Announcement]]" in the "[[Course]]" course with the message: "Thank you for the information! Looking forward to this semester."'
   })
@@ -2753,7 +2753,7 @@ Steps:
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions"],
     request_kvs: [{
     "_type": "form data",
-    "submission[url]": "https://www.exampleproject.com"
+    "submission[url]": "[[_array_contains='https://www.exampleproject.com']]"
     }],
     parameterized_text: 'Task: Submit the URL "https://www.exampleproject.com" as your assignment submission for the assignment titled "[[Assignment]]" in the course "[[Course]]" on Canvas.'
   })
