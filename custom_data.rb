@@ -2302,14 +2302,14 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     id: '542dda0b-1dd9-4c1b-86b3-7343786c226c',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: View the rubric results and instructor comments for your submission to the assignment "[[Assignment]]" in the course "[[Course]]". How many points did you recieve for the first criteria in the rubric? 
+    parameterized_text: 'Task: View the rubric results for your submission to the assignment "[[Assignment]]" in the course "[[Course]]". How many points did you recieve for the [[Criteria]] criteria in the rubric? 
 
 Steps:
 
 1. In the Course Navigation for "[[Course]]," click the Grades link.
 2. Locate the "[[Assignment]]" assignment in your Grades list.
 3. Click the Rubric icon next to the "[[Assignment]]" assignment.
-4. Review the rubric results and read any instructor comments provided under the rubric criteria.' 
+4. Find the [[Criteria]] criteria in rubric and report your score.' 
   })
 
   task.populate(test_course) {|course, task|
@@ -2341,6 +2341,7 @@ Steps:
 
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Assignment", assignment.title)
+    task.update_initalized_text("Criteria", assignment.rubric_association.rubric.data[0][:description])
 
     task.answer_key = {
       "Number": assignment.rubric_association.rubric.data[0][:points]
