@@ -128,7 +128,7 @@ courses:
       replies: 
         - user: terrance@ualberta.ca
           text: Thanks for the reminder! Will the exam be multiple choice or short answer?
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: Appreciate the study guide upload, it'll be really helpful. 
     - title: "Guest Lecture This Wednesday"
       message: We're excited to announce that Dr. Karen Mitchell, a clinical psychologist specializing in anxiety disorders, will be giving a guest lecture this Wednesday during class time. She'll be sharing insights from her research and clinical practice, and there will be a Q&A session at the end. Attendance is strongly encouraged, as this will be highly relevant to our upcoming unit on abnormal psychology.
@@ -213,7 +213,7 @@ courses:
               text: That's a good one! I notice it in myself when I make purchases I later regret but then try to rationalize them.
         - user: phillip@ualberta.ca
           text: I think operant conditioning is the most practical. It helps me understand how habits are formed and how to change them.
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: For me, Maslow's hierarchy of needs is the most helpful. It reminds me that sometimes struggles are about unmet basic needs, not just motivation.
   groups:
     - name: Group J 
@@ -223,41 +223,41 @@ courses:
       is_public: true
       join_level: parent_context_request
       description: A test group
-      leader: sammy@ualberta.ca
+      leader: main_user
       users:
-        - sammy@ualberta.ca
+        - main_user
         - jared@ualberta.ca
         - monica@ualberta.ca
     - name: Group O 
       is_public: true
       join_level: parent_context_request
       description: A test group
-      leader: sammy@ualberta.ca
+      leader: main_user
       users:
-        - sammy@ualberta.ca
+        - main_user
         - alex@ualberta.ca
         - ryan@ualberta.ca
     - name: Group Q 
       is_public: true
       join_level: parent_context_request
       description: A test group
-      leader: sammy@ualberta.ca
+      leader: main_user
       users:
-        - sammy@ualberta.ca
+        - main_user
         - lisa@ualberta.ca
         - abigail@ualberta.ca
     - name: Group H
       is_public: true
       description: A psych student group
       users:
-        - sammy@ualberta.ca
+        - main_user
         - steven@ualberta.ca
         - abigail@ualberta.ca
     - name: Group A
       is_public: true
       description: A team
       users: 
-        - sammy@ualberta.ca
+        - main_user
         - phillip@ualberta.ca
         - terrance@ualberta.ca
       announcements:
@@ -318,7 +318,7 @@ courses:
         - alex@ualberta.ca
         - monica@ualberta.ca
         - abigail@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
       pages:
         - title: Study Tips & Tricks
           body: |
@@ -330,7 +330,7 @@ courses:
         - terrance@ualberta.ca
         - phillip@ualberta.ca
         - abigail@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
       pages:
         - title: Group project presentation
           body: |
@@ -341,7 +341,7 @@ courses:
       users: 
         - terrance@ualberta.ca
         - alex@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
       pages:
         - title: Group project presentation
           body: |
@@ -353,7 +353,7 @@ courses:
         - terrance@ualberta.ca
         - ryan@ualberta.ca
         - lisa@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
       pages:
         - title: Group project presentation
           body: |
@@ -364,7 +364,7 @@ courses:
       users: 
         - terrance@ualberta.ca
         - lisa@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
     - name: Group U
       is_public: true
       description: Study partners for psychology course
@@ -372,7 +372,7 @@ courses:
         - terrance@ualberta.ca
         - ryan@ualberta.ca
         - lisa@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
     - name: Group U2
       is_public: true
       description: Study partners for psychology course
@@ -385,7 +385,7 @@ courses:
       description: Study partners for psychology course
       users: 
         - alex@ualberta.ca
-        - sammy@ualberta.ca
+        - main_user
     - name: Group S
       is_public: true
       description: Study partners for psychology course
@@ -393,7 +393,7 @@ courses:
         - terrance@ualberta.ca
         - steven@ualberta.ca
         - jared@ualberta.ca
-        - sammy@ualbert.ca
+        - main_user
       announcements:
         - title: Saturday Study Session
           message: Hi team! Let's meet at the library this Saturday afternoon to review for our upcoming quiz. Who's in?
@@ -403,7 +403,7 @@ courses:
       is_public: true
       description: Study partners for psychology course
       users: 
-        - sammy@ualberta.ca
+        - main_user
         - phillip@ualberta.ca
         - jared@ualberta.ca
       announcements:
@@ -415,7 +415,7 @@ courses:
       is_public: true
       description: Study partners for psychology course
       users: 
-        - sammy@ualberta.ca
+        - main_user
         - alex@ualberta.ca
         - phillip@ualberta.ca
         - abigail@ualberta.ca
@@ -443,7 +443,7 @@ courses:
           text: Sigmund Freud is a classic.
         - user: phillip@ualberta.ca
           text: Can't go wrong with Carl Rogers.
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: It's gotta be my boy B.F. Skinner.
       peer_reviews: 
         enabled: true
@@ -464,7 +464,7 @@ courses:
       replies:
         - user: sarah@ualberta.ca
           text: My favorite experiment is the Stanford prison experiment!
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: It's gotta the milgram experiment.
       peer_reviews: 
         enabled: true
@@ -485,7 +485,7 @@ courses:
       replies:
         - user: sarah@ualberta.ca
           text: I find the humanistic theory most convincing because it focuses on self-actualization and personal growth. Maslow's hierarchy of needs really resonates with how people prioritize goals in life.  
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: I like trait theory the best. The Big Five personality model makes sense to me because it gives a clear framework for describing differences between people.  
         - user: terrance@ualberta.ca
           text: Freud's psychoanalytic theory is fascinating even though it's controversial. The idea that unconscious drives and childhood experiences shape adult behavior explains a lot of patterns I see in people.  
@@ -510,7 +510,7 @@ courses:
       replies:
         - user: sarah@ualberta.ca
           text: I think emotions play a huge role in decision making. Damasio's Somatic Marker Hypothesis makes sense because gut feelings often guide us when logical reasoning takes too long.  
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: I agree—emotions are important! For example, fear can stop people from taking risks even when the odds are in their favor. This shows how strong emotional regulation is needed for good decision making.  
         - user: terrance@ualberta.ca
           text: The James-Lange theory is interesting to me. It suggests that physical arousal comes first, and then we interpret it as emotion. I wonder how that interpretation affects snap decisions.  
@@ -535,7 +535,7 @@ courses:
       replies:
         - user: sarah@ualberta.ca
           text: I think nurture plays a stronger role. For example, children raised in supportive environments often thrive, even if they have genetic risks for certain disorders.  
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: I lean more toward nature because traits like intelligence and temperament seem strongly linked to genetics, though environment still matters.  
           feedback:
             author: sarah@ualberta.ca
@@ -565,7 +565,7 @@ courses:
       replies:
         - user: phillip@ualberta.ca
           text: I think technology has helped make therapy more accessible. Apps like BetterHelp or Talkspace allow people who can't attend in-person sessions to still get help.  
-        - user: sammy@ualberta.ca
+        - user: main_user
           text: I feel like social media has had a negative impact on mental health, especially with increased anxiety and body image issues. Technology isn't always positive.  
           feedback:
             author: ryan@ualberta.ca
@@ -675,7 +675,7 @@ courses:
               comment: Good example, but could use more references to theory.
           feedback:
             grade: 42
-            grader: tammy@ualberta.ca
+            grader: instructor
             comment: Strong personal connection, next time cite at least one primary study.
     - title: "Stress and Coping Strategies"
       group_category: default
@@ -708,7 +708,7 @@ courses:
           body: |
             <p> I once forgot an important deadline for submitting a project in my previous course. At the time, I believed I had plenty of time and did not set reminders. When the day arrived, I realized I had completely misremembered the due date. This experience can be explained by the concept of prospective memory, which refers to remembering to perform an intended action in the future. Research suggests that without external cues or intentional rehearsal, prospective memory often fails. Additionally, my memory error was influenced by interference from other tasks I was managing simultaneously, which aligns with the theory of interference in memory research. Reflecting on this experience highlights the importance of strategies like setting reminders and breaking tasks into smaller steps to improve memory performance. </p>
           peer_review:
-            - author: sammy@ualberta.ca
+            - author: main_user
               comment: Great personal example, could include more discussion of interference theory.
             - author: monica@ualberta.ca
               comment: Well-written reflection, maybe add one real study to support your points.
@@ -716,7 +716,7 @@ courses:
               comment: Interesting connection to prospective memory, consider mentioning real-world applications.
           feedback:
             grade: 45
-            grader: tammy@ualberta.ca
+            grader: instructor
             comment: Strong explanation and personal insight, next time include at least one empirical reference.
     - title: "Experimental Design Proposal"
       group_category: default
@@ -736,7 +736,7 @@ courses:
               comment: Interesting idea, but clarify sample size.
           feedback:
             grade: 68
-            grader: tammy@ualberta.ca
+            grader: instructor
             comment: Solid design, but remember to include ethical considerations in proposals.
     - title: "Modern Psychology Essay"
       group_category: default
@@ -789,7 +789,7 @@ courses:
               comment: Clear summary, but maybe add more detail about the methodology.
           feedback:
             grade: 42
-            grader: tammy@ualberta.ca
+            grader: instructor
             comment: Great effort—work on expanding the analysis of implications.
     - title: "Childhood Development Essay"
       group_category: default
@@ -809,7 +809,7 @@ courses:
               comment: Not bad.
           feedback:
             grade: 95
-            grader: tammy@ualberta.ca
+            grader: instructor
             comment: excellent job
 
         - user: terrance@ualberta.ca
@@ -837,7 +837,7 @@ courses:
           body: |
             <p>Social interaction is a powerful driver of cognitive development, shaping how individuals acquire knowledge, problem-solving strategies, and cultural norms. Vygotsky's sociocultural theory emphasizes the Zone of Proximal Development (ZPD), where learners progress through guidance and collaboration with more knowledgeable peers or adults. This framework suggests that learning is inherently social, and cognitive growth is facilitated by communication, dialogue, and shared activity. In contrast, Piaget's stages of development place more emphasis on individual discovery through interaction with the environment. While Piaget acknowledged the importance of peers, he viewed development as a sequence of universal stages rather than a process deeply embedded in social context. Both perspectives highlight the importance of active engagement but differ in how much weight they assign to social influence. Modern research tends to integrate these theories, recognizing that social scaffolding accelerates skill acquisition while individual exploration reinforces deeper understanding. Together, they show that cognitive development is both socially mediated and individually constructed.</p>
           feedback:
-            grader: tammy@ualberta.ca
+            grader: instructor
             rubric_assessment:
                   - id: rat1
                     points: 40.0
@@ -883,7 +883,7 @@ courses:
                     comments_enabled: true
           feedback:
             grade: 92
-            grader: tammy@ualberta.ca
+            grader: instructor
             comment: Excellent essay with strong theoretical grounding.
       peer_reviews: 
         enabled: true

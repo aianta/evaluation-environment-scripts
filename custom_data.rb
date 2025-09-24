@@ -9,6 +9,10 @@ require 'json'
 require 'yaml'
 require 'securerandom'
 
+# Path from which course data is loaded when needed.
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+
 def generate_custom_course
   puts "Generating custom course"
   @student_list = []
@@ -77,9 +81,11 @@ def generate_test_environment
 
 
 
-  puts "Loading test data from container path: /usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+  puts "Loading test data from container path: #{$TEST_DATA_PATH}"
   
-  test_data = YAML.load_file "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+
+  test_data = YAML.load_file $TEST_DATA_PATH
+
 
   output = [] # Holds task instance output data
 
@@ -1006,7 +1012,7 @@ def create_task_instances(test_course)
   task.populate(test_course) {|course, task|
 
     # Fetch quiz directly from test data to identify correct answer easily.
-    test_data = YAML.load_file "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+    test_data = YAML.load_file $TEST_DATA_PATH
     course_data = test_data["courses"].select{|c|c["name"] == course.course.name}.first
 
     # Create a list of used quiz names to ensure we're not re-using a quiz used by a different task.
@@ -1217,7 +1223,7 @@ Steps to complete:
   task.populate(test_course) {|course, task|
 
     # Fetch group directly from test data to identify pages with update history easily.
-    test_data = YAML.load_file "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+    test_data = YAML.load_file $TEST_DATA_PATH
     course_data = test_data["courses"].select{|c|c["name"] == course.course.name}.first
 
     used_group_names = []
