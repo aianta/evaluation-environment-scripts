@@ -134,12 +134,17 @@ class ResourceManifest
     # Find an order for selecting resources such that all tasks have valid resources available to them...
     valid_permutations = self.compute_permutations(requests)
     if valid_permutations.nil?
-      print "No valid permutation found, you may be missing a requires resource if this message keeps appearing..."
-      return nil
+      puts "No valid permutation found, you may be missing a required resource if this message keeps appearing..."
+      exit(1)
     end
 
     valid_permutation = valid_permutations.sample
     task_options = {}
+
+    if valid_permutation.length != requests.length
+      puts "Incorrect permutation length of #{valid_permutation.length}, expected #{requests.length}"
+      exit(1)
+    end
 
     requests.each_with_index {|request, index|
       if !task_options[request.task]
@@ -154,6 +159,24 @@ class ResourceManifest
 
   def populate_tasks_v2(tasks)
 
+    # Compute some course stats to assess how much of each resource there is.
+    # This is for debugging purposes.
+    stats = [
+      ['assignment', @course.assignments.length],
+      ['group', @course.groups.length],
+      ['quiz', @course.quizzes.length],
+      ['page', @course.pages.length],
+      ['discussion', @course.discussions.length],
+      ['announcement', @course.announcements.length],
+      ['module', @course.modules.length]
+  ]
+
+    stats = stats.sort{|a,b| a[1] <=> b[1]}
+    stats
+
+    puts "Course stats:"
+    puts stats
+
     original_groups = @course.groups
     original_pages = @course.pages
     original_assignments = @course.assignments
@@ -162,9 +185,18 @@ class ResourceManifest
     original_announcements = @course.announcements
     original_quizzes = @course.quizzes
 
+
+
     group_options = self.compute_task_options_for_type('group')
     page_options = self.compute_task_options_for_type('page')
     assignment_options = self.compute_task_options_for_type('assignment')
+
+    puts "!!Assignment Options: "
+    # puts assignment_options
+    assignment_options.each{|key, value|
+      puts "task: #{key.id} -> #{value.map{|v|v.title}}"
+    }
+
     discussion_options = self.compute_task_options_for_type('discussion')
     module_options = self.compute_task_options_for_type('module')
     announcement_options = self.compute_task_options_for_type('announcement')
@@ -222,7 +254,7 @@ class ResourceManifest
       
       puts "Group Options: #{@course.groups.map{|v| v.name}.join(' ')}"
       puts "Page Options: #{@course.pages.map{|v|v.title}.join(' ')}"
-      puts "Assignment Options: #{@course.assignments.map{|v| v.nil?'nil': v.title}.join(' ')}"
+      puts "Assignment Options: #{@course.assignments.map{|v| v.title}.join(' ')}"
       puts "Discussion Options: #{@course.discussions.map{|v| v.title}.join(' ')}"
       puts "Module Options: #{@course.modules.map{|v| v.name}.join(' ')}"
       puts "Announcement Options: #{@course.announcements.map{|v| v.title}.join(' ')}"
@@ -313,6 +345,11 @@ class ResourceManifest
 
         if permutations.length > 256
           permutations = permutations.sample(256)
+        end 
+
+        if permutations.length == 0
+          puts "Permutation collapse! No valid unique permutation!"
+          exit(1)
         end
 
       puts "#{permutations.length} unique permutations of size #{permutations[0].length}"
@@ -913,6 +950,11 @@ The student account will be assumed to be the logged in user for this course.
 
     assignment = @course.assignments.create!(data.merge({:assignment_group => @group }))
     @assignments << assignment
+
+    if assignment.nil?
+      puts "Assignment was nil!\n#{data}"
+    end
+
     assignment
   end
 
@@ -1090,6 +1132,9 @@ The student account will be assumed to be the logged in user for this course.
      @assignments << assignment
      @discussions << topic
 
+     if assignment.nil?
+        puts "Woah, assignment was nil!\n#{data}"
+     end
      assignment
   end
 

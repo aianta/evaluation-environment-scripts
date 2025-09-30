@@ -10,8 +10,8 @@ require 'yaml'
 require 'securerandom'
 
 # Path from which course data is loaded when needed.
- $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
-# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
+ $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 
 def generate_custom_course
   puts "Generating custom course"
@@ -4026,6 +4026,25 @@ Steps:
 
 end
 
+def get_course_stats(course)
+    # Compute some course stats to assess how much of each resource there is.
+    # This is for debugging purposes.
+    stats = [
+      ['assignment', course.assignments.length],
+      ['group', course.groups.length],
+      ['quiz', course.quizzes.length],
+      ['page', course.pages.length],
+      ['discussion', course.discussions.length],
+      ['announcement', course.announcements.length],
+      ['module', course.modules.length]
+  ]
+
+    stats = stats.sort{|a,b| a[1] <=> b[1]}
+    stats
+
+    puts "#{course.course.name} Course stats:"
+    puts stats
+end
 
 
 =begin
@@ -4036,6 +4055,11 @@ docker-compose run --remove-orphans web bundle exec rails runner spec/fixtures/d
 #explore
 test_courses = generate_test_environment
 all_tasks = []
+
+test_courses.each{|test_course|
+  get_course_stats(test_course)
+}
+
 test_courses.each{|test_course|
   task_instances = create_task_instances(test_course)
 
