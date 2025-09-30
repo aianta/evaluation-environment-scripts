@@ -10,8 +10,8 @@ require 'yaml'
 require 'securerandom'
 
 # Path from which course data is loaded when needed.
-# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+ $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 
 def generate_custom_course
   puts "Generating custom course"
@@ -586,7 +586,7 @@ def generate_test_environment
 
   }
 
-  courses[0]
+  courses
 
 end
 
@@ -663,6 +663,8 @@ end
 
 def create_task_instances(test_course)
 
+  resource_manifest = ResourceManifest.new(test_course)
+
   tasks = []
 
   task = AgentTask.new({
@@ -678,7 +680,22 @@ def create_task_instances(test_course)
     parameterized_text: "Task: In the course '[[Course]]' switch from your current group '[[Group 1]]' to the group '[[Group 2]]' within the 'Student Groups' group set."
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+        'group',
+        test_course.groups,
+        lambda {|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) }},
+        task))
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+      'group',
+      test_course.groups,
+      lambda {|groups| groups.select{ |g| (!g.users.include? test_course.logged_in_user) }},
+      task
+  ))
+
   task.populate(test_course) { |course, task|
+
+      
 
       # find a group that the logged-in user is part of.
       group1 = course.groups.select {|group| (group.users.include? course.logged_in_user) && (!AgentTask.groups.include? group)}.first
@@ -720,9 +737,16 @@ def create_task_instances(test_course)
     parameterized_text: 'Task: In the course "[[Course]]" use the Syllabus page to find the due date for the assignment titled "[[Assignment]]".'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda {|assignments| assignments.select{true}},
+    task
+  ))
+
   task.populate(test_course) { |course,task|
 
-    assignment = course.assignments.select {|a| (!AgentTask.assignments.include? a) && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && (!a.submission_types.include? "online_url")}.first
+    assignment = course.assignments.select {|a| (!AgentTask.assignments.include? a)}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"
@@ -758,6 +782,17 @@ def create_task_instances(test_course)
     parameterized_text: "Task: View the feedback left by your instructor for the assignment '[[Assignment]]' in the course '[[Course]]', and add a comment saying 'Thank you for the feedback!' using the Feedback sidebar."
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{ |a|
+       submission = a.submissions.find_by(user_id: test_course.logged_in_user.id)
+       comment_by_teacher = submission.submission_comments.select {|comment| comment.author == test_course.teacher}.first
+       comment_by_teacher
+    }},
+    task
+  ))
+
   task.populate(test_course) { |course,task|
 
     assignment = course.assignments.select {|a| # Find an assignment
@@ -765,7 +800,7 @@ def create_task_instances(test_course)
       submission = a.submissions.find_by(user_id: course.logged_in_user.id)
       # where that submission has a comment provided by the course instructor. 
       comment_by_teacher = submission.submission_comments.select {|comment| comment.author == course.teacher}.first
-      comment_by_teacher && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && (!a.submission_types.include? "online_url")
+      comment_by_teacher
   }.first
 
     if (assignment.nil?) || (AgentTask.assignments.include? assignment)
@@ -797,6 +832,13 @@ def create_task_instances(test_course)
     answer_type: 'Numeric',
     parameterized_text: 'Task: View the rubric for the quiz titled "[[Quiz]]" in the course "[[Course]]" by navigating to the Grades page, clicking on "[[Quiz]]," and then clicking the "Show Rubric" link on the submission details page. What is the sum total number of points possible across all criteria on the rubric?'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes, 
+    lambda{|quizzes| quizzes.select{|q| (!q.assignment.nil?) && (!q.assignment.rubric_association.nil?)}},
+    task
+  ))
 
   task.populate(test_course) {|course, task| 
 
@@ -838,6 +880,7 @@ def create_task_instances(test_course)
       }],
     parameterized_text: 'Task: Create a new student group named "[[Group]]" in the course "[[Course]]", set the group membership to "Membership by invitation only", and invite students named "[[User 1]]" and "[[User 2]]" to join the group.'
   })
+
 
   task.populate(test_course) {|course,task| 
 
@@ -888,13 +931,20 @@ def create_task_instances(test_course)
     parameterized_text: 'Task: In your group "[[Group]]" for the course [[Course]], create a new announcement with the title "[[Announcement]]" and the following content: "[[Announcement Message]]". Allow other users to like the announcement, and publish it.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g|(g.users.include? test_course.logged_in_user) }},
+    task
+  ))
+
   task.populate(test_course) { |course, task|
 
     # pick a group which hasn't been used for a task before and to which the logged in user belongs.
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.leader.nil?) &&(g.users.include? course.logged_in_user) && (g.wiki_pages.length == 0)}.first 
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user) }.first 
 
     if group.nil?
-      puts "Could not find group for task #{task.id}"
+      puts "Could not find group for task #{task.id} in course: #{course.course.name}"
       return
     end
 
@@ -927,6 +977,13 @@ def create_task_instances(test_course)
     }],
     parameterized_text: 'Task: Subscribe to the "[[Discussion]]" discussion in the "[[Course]]" course so that you receive notifications when new comments are posted.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda {|discussions| discussions.select{true}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -975,6 +1032,13 @@ def create_task_instances(test_course)
         }],
     parameterized_text: 'Task: Take the "[[Quiz]]" in the "[[Course]]" course, answer all questions, flag question 3 for review, and submit the quiz when finished.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda{|quizzes| quizzes.select{|q| q.quiz_questions.length >= 3}},
+    task
+  ))
   
   task.populate(test_course) { |course, task|
 
@@ -1008,6 +1072,26 @@ def create_task_instances(test_course)
       }],
     parameterized_text: 'Task: In the course "[[Course]]," open the quiz titled "[[Quiz]]" and answer Question [[Question Index]], which is a short answer question, by typing "[[Answer]]" into the provided text box.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda{|quizzes| 
+      # Fetch quiz directly from test data to identify correct answer easily.
+      test_data = YAML.load_file $TEST_DATA_PATH
+      course_data = test_data["courses"].select{|c|c["name"] == test_course.course.name}.first
+
+      # Create a list of used quiz names to ensure we're not re-using a quiz used by a different task.
+      used_quiz_names = []
+      AgentTask.quizzes.each {|q| used_quiz_names << q.title}
+
+      quiz = course_data["quizzes"].select {|q| (!used_quiz_names.include? q["title"]) && (q["questions"].length >= 2) && (!q["questions"].select{|question| question["question_type"] == "short_answer_question"}.first.nil?) && (!q["one_question_at_a_time"])}.first
+
+      quizzes.select{|q| q.title == quiz["title"]}
+
+    },
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -1059,12 +1143,19 @@ def create_task_instances(test_course)
     parameterized_text: 'Task:  In your group ([[Group]]) for the course "[[Course]]" close your own discussion titled "[[Discussion]]" for comments.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) && (!g.discussion_topics.select {|dt| dt.user == test_course.logged_in_user}.first.nil?)}},
+    task
+  ))
+
   task.populate(test_course){|course,task|
 
-    group = course.groups.select {|g| (!AgentTask.groups.include? g) && (g.leader.nil?) && (g.users.include? course.logged_in_user) && (!g.discussion_topics.select {|dt| dt.user == course.logged_in_user}.first.nil?) }.first
+    group = course.groups.select {|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user) && (!g.discussion_topics.select {|dt| dt.user == course.logged_in_user}.first.nil?) }.first
 
     if group.nil?
-      puts "Cannot find group for task #{task.id}"
+      puts "Cannot find group for task #{task.id} in #{course.course.name}"
       return 
     end
 
@@ -1101,9 +1192,16 @@ Steps to complete:
 3. On the Assignment Summary page, review the assignment title, due date, points possible, and read any instructions provided by the instructor in the Details section.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{true}},
+    task
+  ))
+
   task.populate(test_course){ |course, task|
 
-    assignment = course.assignments.select {|a| (!AgentTask.assignments.include? a) && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && (!a.submission_types.include? "online_url")}.first
+    assignment = course.assignments.select {|a| (!AgentTask.assignments.include? a)}.first
 
     if assignment.nil?
       puts "Could not find assignment for task #{task.id}"
@@ -1137,6 +1235,8 @@ Steps to complete:
     parameterized_text: 'Task: In the course "[[Course]]," use the People page to search for the user named "[[User]]," view their profile details, and send them a message with the text: "Hi, I have a question about the lab assignment. Can we discuss it?" and the subject line "Hi!".'
   })
 
+
+
   task.populate(test_course) {|course, task|
 
     user = course.classmates.select {|c| !AgentTask.users.include? c}.first
@@ -1163,6 +1263,13 @@ Steps to complete:
     answer_type: 'Text',
     parameterized_text: 'Task: In the course "[[Course]]" view the page titled "[[Page]]" by navigating to the Pages Index and selecting the page from the list. Return the contents of the page body.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'page',
+    test_course.pages,
+    lambda{|pages| pages.select{true}},
+    task
+  ))
 
   task.populate(test_course) {|course,task|
 
@@ -1192,6 +1299,13 @@ Steps to complete:
     parameterized_text: 'Task: In the course "[[Course]]," use the Quizzes page to find the quiz titled "[[Quiz]]", report the number of questions this quiz has.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda {|quizzes| quizzes.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     quiz = course.quizzes.select{|q| !AgentTask.quizzes.include? q}.first
@@ -1219,6 +1333,23 @@ Steps to complete:
     answer_type: 'Date Time',
     parameterized_text: 'Task: In the "[[Group]]" group, view the revision history of the page titled "[[Page]]" and identify the most recent edit and report when it was made.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| 
+    # Fetch group directly from test data to identify pages with update history easily.
+    test_data = YAML.load_file $TEST_DATA_PATH
+    course_data = test_data["courses"].select{|c|c["name"] == test_course.course.name}.first
+
+    used_group_names = []
+    AgentTask.groups.each {|group| used_group_names << group.name}
+
+    group = course_data["groups"].select{|g| (!used_group_names.include? g["name"]) && (!g["pages"].nil?) && (!g["pages"].select{|p| !p["updates"].nil?}.first.nil?)}.first
+
+    groups.select{|g| g.name == group["name"]}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -1268,9 +1399,16 @@ Steps to complete:
     parameterized_text: 'Task: In the course "[[Course]]," use the Assignments page to search for the assignment titled "[[Assignment]]." When is this assignment due?'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task| 
 
-    assignment = course.assignments.select { |a| (!AgentTask.assignments.include? a) && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && (!a.submission_types.include? "online_url")}.first
+    assignment = course.assignments.select { |a| (!AgentTask.assignments.include? a) }.first
 
     if assignment.nil?
       puts "Could not find assignment for task #{task.id}"
@@ -1302,9 +1440,16 @@ Steps to complete:
     parameterized_text: 'Task: In the course "[[Course]]," use the Course Home Page to remove the "[[Assignment]]" assignment from your To Do list in the sidebar.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments, 
+    lambda{|assignments| assignments.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && (!a.submission_types.include? "online_url")}.first
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a)}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"
@@ -1336,9 +1481,16 @@ Steps to complete:
     parameterized_text: 'Task: In your "[[Group]]" group, create a new discussion titled "[[Discussion]]," write "[[Discussion Message]]" allow group members to like the discussion, and add it to other group members\' to-do lists.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user)}},
+    task
+  ))
+
   task.populate(test_course) {|course,task|
 
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.leader.nil?) && (g.users.include? course.logged_in_user) && (g.wiki_pages.length == 0)}.first
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user)}.first
 
     if group.nil?
       puts "Could not find group for task #{task.id}"
@@ -1373,6 +1525,13 @@ Steps to complete:
     }],
     parameterized_text: 'Task: Reply to the main discussion in the "[[Discussion]]" discussion in the "[[Course]]" course with the following text: "I believe that local communities can play a significant role in addressing climate change by implementing sustainable practices."'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda{|discussions| discussions.select{true}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -1425,6 +1584,13 @@ Steps:
 4. Record the number of attempts you have remaining for the "[[Quiz]]."'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda{|quizzes| quizzes.select{|q| (!q.quiz_submissions.select{|s| (s.user == test_course.logged_in_user) && (s.submission.submission_comments.length == 0)}.first.nil?)}},
+    task
+  ))
+
   task.populate(test_course) {|course,task|
 
     quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q) && (!q.quiz_submissions.select{|s| (s.user == course.logged_in_user) && (s.submission.submission_comments.length == 0)}.first.nil?)}.first
@@ -1462,6 +1628,16 @@ Steps to complete:
 5. Read all comments so that the unread indicator disappears.',
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a|
+      (!a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?) &&
+      (!a.submissions.where(user_id: test_course.logged_in_user).first.submission_comments.select{|c| c.author == test_course.teacher}.first.nil?)
+    }},
+    task
+  ))
+
   task.populate(test_course) {|course,task|
 
     assignment = course.assignments.select{|a| 
@@ -1486,8 +1662,7 @@ Steps to complete:
 
     (!AgentTask.assignments.include? a) && # Find an assignment that hasn't already been used.
        (!a.submissions.where(user_id: course.logged_in_user).first.body.nil?) && # Where the logged in user has made a submission whose body isn't nil
-       ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && # Don't use up assignments with rubric assessments on this task.
-       (!a.submissions.where(user_id: course.logged_in_user).first.submission_comments.select{|c| c.author == course.teacher}.first.nil?) && (!a.submission_types.include? "online_url") # And the teacher of the course has left a comment on their submission
+       (!a.submissions.where(user_id: course.logged_in_user).first.submission_comments.select{|c| c.author == course.teacher}.first.nil?) # And the teacher of the course has left a comment on their submission
   
       }.first
 
@@ -1519,14 +1694,23 @@ Steps to complete:
     parameterized_text: 'Task: In the Canvas course "[[Course]]," locate and view the peer feedback you received for the assignment titled "[[Assignment]]" by accessing the submission details page. What was the feedback [[User]] provided to your submission?'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a| 
+      (!a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?) &&
+      (!a.submissions.where(user_id: test_course.logged_in_user).first.submission_comments.select{|c| test_course.classmates.include? c.author}.first.nil?)
+      }},
+      task
+  ))
+
   task.populate(test_course) {|course, task| 
 
     assignment = course.assignments.select{|a| 
       (!AgentTask.assignments.include? a) && # Find an assignment that hasn't already been used.
        (!a.submissions.where(user_id: course.logged_in_user).first.body.nil?) && # Where the logged in user has made a submission whose body isn't nil
-       ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && # Don't use up assignments with rubric assessments on this task.
        (!a.submissions.where(user_id: course.logged_in_user).first.body.nil?) && 
-       (!a.submissions.where(user_id: course.logged_in_user).first.submission_comments.select{|c| course.classmates.include? c.author}.first.nil?) && (!a.submission_types.include? "online_url") # And the teacher of the course has left a comment on their submission
+       (!a.submissions.where(user_id: course.logged_in_user).first.submission_comments.select{|c| course.classmates.include? c.author}.first.nil?) # And the teacher of the course has left a comment on their submission
     
       }.first
 
@@ -1564,6 +1748,13 @@ Steps to complete:
       }],
     parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]," and manually mark the reply from "[[User]]" as unread.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda {|discussions| discussions.select{|d| (!d.discussion_entries.select{|e| test_course.classmates.include? e.user}.first.nil?)}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -1621,6 +1812,13 @@ Steps to complete:
     parameterized_text: 'Task: In the course "[[Course]]," reply to the announcement titled "[[Announcement]]" by posting the message "Great announcement, @[[User]]! Looking forward to this week." and mention the user [[User]] in your reply.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'announcement',
+    test_course.announcements,
+    lambda{|announcements| announcements.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task| 
 
     announcement = course.announcements.select {|a| (!AgentTask.announcements.include? a) }.first
@@ -1655,6 +1853,13 @@ Steps to complete:
       "submission[comment]": "Great+analysis!+I+especially+liked+your+use+of+recent+data+to+support+your+points."}],
     parameterized_text: 'Task: Submit a peer review comment for the discussion "[[Discussion]]" in the course "[[Course]]" by reviewing [[User]]\'s reply and entering the following comment in the comment sidebar: "Great analysis! I especially liked your use of recent data to support your points." Then, click the Save button to complete the peer review.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda{|discussions| discussions.select{|d| (!d.assignment.nil?)}},
+    task
+  ))
 
   task.populate(test_course){ |course,task|
 
@@ -1692,6 +1897,13 @@ Steps to complete:
     request_kvs: [{}, {}],
     parameterized_text: 'Task: Take the quiz titled "[[Quiz]]" in the course "[[Course]]," answering each question as it appears on the screen, and use the Next button to advance to the next question after answering. Do not leave any question blank.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda{|quizzes| quizzes.select{|q| q.one_question_at_a_time}},
+    task
+    ))
 
   task.populate(test_course){|course,task|
 
@@ -1743,6 +1955,13 @@ Steps to complete:
 7. In the confirmation dialog, click the "Delete" button to confirm deletion of the "[[Page]]" page.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) && (g.wiki_pages.length >= 1)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     group = course.groups.select{|g| 
@@ -1754,7 +1973,7 @@ Steps to complete:
       puts "g.wiki_pages.length >= 1 #{g.wiki_pages.length >= 1}"
     end
 
-    (!AgentTask.groups.include? g) && (g.leader.nil?) && (g.users.include? course.logged_in_user) && (g.wiki_pages.length >= 1) }.first
+    (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user) && (g.wiki_pages.length >= 1) }.first
 
     if group.nil?
       puts "Cannot find group for task #{task.id}"
@@ -1785,9 +2004,17 @@ Steps to complete:
     parameterized_text: 'Task: Delete the announcement titled "[[Announcement]]" from the "[[Group]]" group in the [[Course]] course on Canvas.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| groups.select{|g| (!g.announcements.select{|a| a.user == test_course.logged_in_user}.first.nil?) }},
+    task
+    ))
+
+
   task.populate(test_course) {|course, task|
 
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.leader.nil?) && (!g.announcements.select{|a| a.user == course.logged_in_user}.first.nil?) && (g.wiki_pages.length == 0)}.first
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (!g.announcements.select{|a| a.user == course.logged_in_user}.first.nil?) }.first
 
     if group.nil?
       puts "Could not find group for task #{task.id}"
@@ -1882,9 +2109,16 @@ Steps to complete:
     parameterized_text: 'Task: In the "[[Group]]," create a new group page titled "[[Page]]." In the page content, enter the following text: "[[Page Message]]" Set the page so that anyone can edit it, and check the box to notify users that this content has changed. Save the page.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g| (g.users.include? test_course.logged_in_user)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.leader.nil?) && (g.users.include? course.logged_in_user)&& (g.wiki_pages.length == 0)}.first
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user)}.first
 
     if group.nil?
       puts "Cannot find group for task #{task.id}"
@@ -1929,12 +2163,21 @@ Steps:
 7. Click the "Save" button to submit your comment.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments, 
+    lambda {|assignments| assignments.select{|a| 
+      (!a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?) &&
+      (!a.submissions.where(user_id: test_course.logged_in_user).first.submission_comments.select{|c| test_course.classmates.include? c.author}.first.nil?)
+      }},
+      task
+  ))
+
   task.populate(test_course) {|course, task|
     assignment = course.assignments.select{|a| 
       (!AgentTask.assignments.include? a) && # Find an assignment that hasn't already been used.
        (!a.submissions.where(user_id: course.logged_in_user).first.body.nil?) && # Where the logged in user has made a submission whose body isn't nil
-       ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && # Don't use up assignments with rubric assessments on this task.
-       (!a.submissions.where(user_id: course.logged_in_user).first.submission_comments.select{|c| course.classmates.include? c.author}.first.nil?) && (!a.submission_types.include? "online_url")# And the teacher of the course has left a comment on their submission
+       (!a.submissions.where(user_id: course.logged_in_user).first.submission_comments.select{|c| course.classmates.include? c.author}.first.nil?) # And the teacher of the course has left a comment on their submission
 
       }.first
 
@@ -1972,9 +2215,20 @@ Steps:
 5. Note the name of a student assigned to you for peer review.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda{|discussions| discussions.select{|d| 
+      (!d.assignment.nil?) &&
+      (d.discussion_entries.length >= 2) && 
+      (!d.discussion_entries.select{|e| e.user == test_course.logged_in_user}.first.nil?)
+      }},
+      task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    discussion = course.discussions.select{|d| (!AgentTask.discussions.include? d) && (!d.assignment.nil?) && (d.discussion_entries.length == 2) && (!d.discussion_entries.select{|e| e.user == course.logged_in_user}.first.nil?)}.first
+    discussion = course.discussions.select{|d| (!AgentTask.discussions.include? d) && (!d.assignment.nil?) && (d.discussion_entries.length >= 2) && (!d.discussion_entries.select{|e| e.user == course.logged_in_user}.first.nil?)}.first
 
     if discussion.nil?
       puts "Cannot find discussion for task #{task.id}"
@@ -1982,7 +2236,7 @@ Steps:
     end
 
     AgentTask.discussions << discussion
-    AgentTask.assignments << discussion.assignment
+    # AgentTask.assignments << discussion.assignment
 
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Discussion", discussion.title)
@@ -2005,6 +2259,13 @@ Steps:
     request_kvs: [{}],
     parameterized_text: 'Task: In the course "[[Course]]," go to the Modules section and mark the content page titled "[[Page]]" as done.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'module',
+    test_course.modules,
+    lambda {|_modules| _modules.select{|m| (!m.content_tags.select{|i| i.content_type == 'WikiPage'}.first.nil?)} },
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -2057,13 +2318,17 @@ Steps:
 4. View the submission confirmation details to confirm that your assignment has been submitted.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a|(!a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) &&
-    ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && # Don't use up assignments with rubric assessments on this task. 
-    (!a.submissions.where(user_id: course.logged_in_user).first.body.nil?) && (!a.submission_types.include? "online_url")
-
-  }.first
+      (!a.submissions.where(user_id: course.logged_in_user).first.body.nil?)}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"
@@ -2097,6 +2362,16 @@ Steps:
     parameterized_text: 'Task: As the student group leader of "[[Group 1]]" in the "[[Course]]" course, change your group\'s name to "[[Group 2]]".'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| groups.select{|g|
+    (!g.leader.nil?) &&
+    (g.leader == test_course.logged_in_user)
+    }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     group = course.groups.select {|g| 
@@ -2113,8 +2388,7 @@ Steps:
       
       (!AgentTask.groups.include? g) && # Find a group that's not yet used by some other task.
       (!g.leader.nil?) && # Which has a leader specified.
-      (g.leader == course.logged_in_user) && # And whose leader is the logged in user. 
-      (g.wiki_pages.length == 0) # Don't use up groups with defined pages for this task.
+      (g.leader == course.logged_in_user) # And whose leader is the logged in user. 
     }.first
 
     if group.nil?
@@ -2150,9 +2424,16 @@ Steps:
     parameterized_text: 'Task: As the student group leader of "[[Group]]" in the "[[Course]]" course, remove the member named "[[User]]" from the group. Submit your changes.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g| (!g.leader.nil?) && (g.leader == test_course.logged_in_user) && (g.users.length >= 2) }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (!g.leader.nil?) && (g.leader == course.logged_in_user) && (g.wiki_pages.length == 0)}.first
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (!g.leader.nil?) && (g.leader == course.logged_in_user)}.first
 
     if group.nil?
       puts "Cannot find group for task #{task.id}"
@@ -2184,14 +2465,24 @@ Steps:
 To complete this task, navigate to the "[[Assignment]]" assignment, click the "Show Rubric" link, and review the ratings and comments provided by your peers. If there are multiple peer reviews, use the "Show Assessment By" drop-down menu to view each peer\'s rubric assessment.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda {|assignments| assignments.select{|a| 
+      (!a.rubric_association.nil?) && 
+      (a.rubric_association.rubric_assessments.length > 0) &&
+      (!a.rubric_association.rubric_assessments.select{|assessment| (assessment.user == test_course.logged_in_user) && (test_course.classmates.include? assessment.assessor) }.first.nil?)
+      }},
+      task
+  ))
+
   task.populate(test_course) {|course, task|
 
     assignment = course.assignments.select{|a| 
       (!AgentTask.assignments.include? a) && 
       (!a.rubric_association.nil?) &&
       (a.rubric_association.rubric_assessments.length > 0) &&
-      (!a.rubric_association.rubric_assessments.select{|assessment| (assessment.user == course.logged_in_user) && (course.classmates.include? assessment.assessor) }.first.nil?) && (!a.submission_types.include? "online_url")
-
+      (!a.rubric_association.rubric_assessments.select{|assessment| (assessment.user == course.logged_in_user) && (course.classmates.include? assessment.assessor) }.first.nil?) 
     }.first
 
     if assignment.nil?
@@ -2228,6 +2519,16 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     parameterized_text: 'Task: Complete a peer review for the assignment "[[Assignment]]" in the course "[[Course]]" by leaving the following comment in the comment sidebar: "Great job but consider adding more sources to support your arguments." Submit your assessment to finish the peer review.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a| 
+      (AssessmentRequest.for_assignment(a.id).length > 0) && 
+      (!AssessmentRequest.for_assignment(a.id).select{|request| request.assessor == test_course.logged_in_user}.first.nil?)
+      }},
+      task
+  ))
+
   task.populate(test_course) { |course, task|
 
     assignment = course.assignments.select{|a| 
@@ -2244,9 +2545,6 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
       end
 
       (!AgentTask.assignments.include? a) && 
-      (!a.submission_types.include? "discussion_topic") &&
-      (!a.submission_types.include? "online_url") &&
-      ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && # Don't use up assignments with rubric assessments on this task.  
       (AssessmentRequest.for_assignment(a.id).length > 0) &&
       (!AssessmentRequest.for_assignment(a.id).select{|request| request.assessor == course.logged_in_user}.first.nil?)
     }.first
@@ -2280,6 +2578,13 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     }],
     parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]," locate the reply by student "[[User]]" and click the Like icon to like this reply.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda {|discussions| discussions.select{|d| (d.allow_rating == true) &&  (d.discussion_entries.length > 0)}},
+    task
+  ))
 
   task.populate(test_course){|course, task|
 
@@ -2318,6 +2623,17 @@ Steps:
 4. Find the [[Criteria]] criteria in rubric and report your score.' 
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a|
+      (!a.rubric_association.nil?) &&
+      (a.rubric_association.rubric_assessments.length > 0) &&
+      (!a.rubric_association.rubric_assessments.select{|assessment| assessment.assessor == test_course.teacher}.first.nil?)
+    }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     assignment = course.assignments.select{|a| 
@@ -2335,7 +2651,7 @@ Steps:
     (!AgentTask.assignments.include? a) && 
       (!a.rubric_association.nil?) &&
       (a.rubric_association.rubric_assessments.length > 0) &&
-      (!a.rubric_association.rubric_assessments.select{|assessment| assessment.assessor == course.teacher}.first.nil?) && (!a.submission_types.include? "online_url")
+      (!a.rubric_association.rubric_assessments.select{|assessment| assessment.assessor == course.teacher}.first.nil?) 
     }.first
 
     if assignment.nil? 
@@ -2370,6 +2686,13 @@ Steps:
     parameterized_text: 'Task: Reply to the announcement titled "[[Announcement]]" in the "[[Course]]" course with the message: "Thank you for the information! Looking forward to this semester."'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'announcement',
+    test_course.announcements,
+    lambda{|announcements| announcements.select{true}},
+    task
+  ))
+
   task.populate(test_course){|course,task|
 
     announcement = course.announcements.select{|a|
@@ -2398,6 +2721,13 @@ Steps:
     answer_type: 'Numeric',
     parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]". How many replies are there for this discussion?'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda {|discussions| discussions.select{|d| (d.discussion_entries.length > 0)}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -2436,6 +2766,13 @@ Steps:
     parameterized_text: 'Task: In the course "[[Course]]," report a reply in the discussion titled "[[Discussion]]" as inappropriate. Select "inappropriate" as the reason for reporting and submit your report.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda{|discussions| discussions.select{|d| (d.discussion_entries.length > 0)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     discussion = course.discussions.select{|d| (!AgentTask.discussions.include? d) && (d.discussion_entries.length > 0)}.first
@@ -2465,6 +2802,16 @@ Steps:
     }],
     parameterized_text: 'Task: In your {{Course}} course, edit your reply in the "[[Discussion]]" discussion by changing the text to "I believe renewable energy is essential for our future." and save your changes.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda{|discussions| discussions.select{|d| 
+      (d.discussion_entries.length > 0) &&
+      (d.discussion_entries.select{|e| e.user == test_course.logged_in_user}.length == 1)
+    }},
+    task
+  ))
 
   task.populate(test_course){|course, task|
 
@@ -2524,6 +2871,13 @@ Steps:
 7. Click the Reply button to post your response.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'announcement',
+    test_course.announcements,
+    lambda{|announcements| announcements.select{|a|(a.discussion_entries.length > 0) }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
   
     announcement = course.announcements.select{|a| (!AgentTask.announcements.include? a) && (a.discussion_entries.length > 0)}.first
@@ -2560,9 +2914,16 @@ Steps:
     parameterized_text: 'Task:  Add the external RSS feed "https://news.ycombinator.com/rss" to the "[[Group]]" group announcements in Canvas, set it to display only posts with the phrase "AI" in the title, and choose the "Full article" option for content display.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user)}},
+    task
+  ))
+
   task.populate(test_course){|course, task|
 
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user) && (g.wiki_pages.length == 0)}.first
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user)}.first
 
     if group.nil?
       puts "Cannot find group for task #{task.id}"
@@ -2586,10 +2947,17 @@ Steps:
     parameterized_text: 'Task: Locate and open your assigned peer review for the "[[Assignment]]" assignment in the "[[Course]]" course using the To Do list on your Canvas Dashboard. What is the name of the student whose submission you are reviewing?'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda {|assignments| assignments.select{|a| (!AssessmentRequest.for_assignment(a.id).select{|assessment| assessment.assessor == test_course.logged_in_user}.first.nil?)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && 
-      (!AssessmentRequest.for_assignment(a.id).select{|assessment| assessment.assessor == course.logged_in_user}.first.nil?) && (!a.submission_types.include? "online_url")
+      (!AssessmentRequest.for_assignment(a.id).select{|assessment| assessment.assessor == course.logged_in_user}.first.nil?)
     }.first
 
     if assignment.nil?
@@ -2622,11 +2990,20 @@ Steps:
     parameterized_text: 'Task: In the course "[[Course]]" use the What-If Grades feature to enter a hypothetical score of 85 for the assignment "[[Assignment]]" and view how this affects your total grade.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments, 
+    lambda{|assignments| assignments.select{|a|
+      # Only select from assignments that don't have associated discussion topics.
+      #!test_course.discussions.select{|d| !d.assignment.nil?}.map{|d| d.assignment}.include? a
+      true
+    }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && 
-      ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0) && (!a.submission_types.include? "online_url")) 
-    }.first
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a)}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"
@@ -2660,6 +3037,13 @@ Steps:
       }],
     parameterized_text: 'Task: In the "[[Group]]" group, edit the page titled "[[Page]]" by changing its title to "Final [[Page]]" and adding the following text to the top of the page: "This is the finalized version of our group research outline for submission." Save your changes.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g| (g.wiki_pages.length > 0) }},
+    task
+  ))
 
   task.populate(test_course) {|course, task| 
     group = course.groups.select{|g| 
@@ -2699,10 +3083,16 @@ Steps:
     parameterized_text: 'Task: View the rubric for the assignment titled "[[Assignment]]" in the course "[[Course]]" by navigating to the Assignments page, clicking on "[[Assignment]]," and locating the rubric displayed below the assignment instructions. What is the heading of the rubric for this assignment?'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a| (!a.rubric_association.nil?) }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && 
-      ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && (!a.submission_types.include? "online_url")
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (!a.rubric_association.nil?)
     }.first
 
     if assignment.nil?
@@ -2728,6 +3118,13 @@ Steps:
     answer_type: 'Numeric',
     parameterized_text: 'Task: View the rubric for the graded discussion titled "[[Discussion]]" in the course "[[Course]]" by navigating to the Discussions section, selecting the discussion, and opening the rubric. How many points can you score for the first criteria of the rubric?'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda {|discussions| discussions.select{|d| (!d.assignment.nil?) && (!d.assignment.rubric_association.nil?)}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -2764,6 +3161,13 @@ Steps:
     }],
     parameterized_text: 'Task: Submit the URL "https://www.exampleproject.com" as your assignment submission for the assignment titled "[[Assignment]]" in the course "[[Course]]" on Canvas.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda{|assignments| assignments.select{|a| (a.submission_types.include? "online_url") }},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -2823,6 +3227,13 @@ Steps:
     parameterized_text: 'Task: In the course "[[Course]]" use the search field in the Announcements Index Page to find the announcement titled "[[Announcement]]". Then, mark all announcements as read using the "Mark All as Read" button.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'announcement',
+    test_course.announcements,
+    lambda {|announcements| announcements.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     announcement = course.announcements.select{|a| (!AgentTask.announcements.include? a)}.first
@@ -2866,9 +3277,16 @@ Steps:
 7. Click the "Submit Assignment" button.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda {|assignments| assignments.select{|a| (a.submission_types.include? "online_text_entry")}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submission_types.include? "online_text_entry") && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0))}.first
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submission_types.include? "online_text_entry")}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"
@@ -2902,9 +3320,16 @@ Steps:
 5. Record the score displayed in the score column for the "[[Assignment]]" assignment.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'assignment',
+    test_course.assignments,
+    lambda {|assignments| assignments.select{|a| (!a.submissions.select{|s| (s.user == test_course.logged_in_user) && (s.graded?)}.first.nil?)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && ((a.rubric_association.nil?) || (a.rubric_association.rubric_assessments.length == 0)) && 
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && 
       (!a.submissions.select{|s| (s.user == course.logged_in_user) && (s.graded?)}.first.nil?)
     }.first
 
@@ -2938,6 +3363,13 @@ Steps:
     }],
     parameterized_text: 'Task: Edit the announcement titled "[[Announcement]]" in the group [[Group]] in the [[Course]] course by changing the content to "Our first group meeting will be held on Friday at 3 PM in the atrium." Then, click the Save button to save your changes.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) && (!g.announcements.select{|a| a.user == test_course.logged_in_user}.first.nil?)}},
+    task
+  ))
 
   task.populate(test_course) {|course,task|
 
@@ -2979,6 +3411,13 @@ Embed a YouTube video into the "[[Page]]" page in the "[[Group]]" group, using t
 then save the changes.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g| (g.wiki_pages.length > 0) && (g.users.include? test_course.logged_in_user) }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.wiki_pages.length > 0) && (g.users.include? course.logged_in_user)}.first
@@ -3012,6 +3451,13 @@ then save the changes.'
       }],
     parameterized_text: 'Task: Leave the group "[[Group]]" in the course "[[Course]]" using the People page in Canvas.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) }},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -3064,6 +3510,13 @@ then save the changes.'
     parameterized_text: 'Task: In the course "[[Course]]," view all available groups, and join the self sign-up group named "[[Group]]."'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'group',
+    test_course.groups,
+    lambda {|groups| groups.select{|g|(!g.users.include? test_course.logged_in_user) }},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     group = course.groups.select{|g| (!AgentTask.groups.include? g) && (!g.users.include? course.logged_in_user)}.first
@@ -3105,6 +3558,13 @@ Instructions:
 8. In the confirmation dialog, click the Submit button again to finalize your submission.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda{|quizzes| quizzes.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q)}.first
@@ -3139,6 +3599,13 @@ Instructions:
     parameterized_text: 'Task: In the course "[[Course]]," find the announcement titled "[[Announcement]]" in your Course Activity Stream and remove this notification from your activity stream.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'announcement',
+    test_course.announcements,
+    lambda {|announcements| announcements.select{true}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     announcement = course.announcements.select{|a| (!AgentTask.announcements.include? a)}.first
@@ -3166,6 +3633,13 @@ Instructions:
     answer_type: 'Date Time',
     parameterized_text: 'Task: In the course "[[Course]]" view all modules, expand the module titled [[Module]]" and identify the due date for the assignment named "[[Assignment]]."'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'module',
+    test_course.modules,
+    lambda {|_modules| _modules.select{|m| (!m.content_tags.select{|i| i.content_type == 'Assignment'}.first.nil?)}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -3205,6 +3679,13 @@ Instructions:
     }],
     parameterized_text: 'Task: View your instructor\'s comments on the "[[Quiz]]" quiz in the "[[Course]]" course and add a comment saying "Thank you for the feedback!" to your quiz submission.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda {|quizzes| quizzes.select{|q| (!q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.submission.submission_comments.length > 0)}.first.nil?)}},
+    task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -3251,6 +3732,13 @@ Steps:
 3. Click the "Resume Quiz" button to continue the quiz from where you left off.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes, 
+    lambda {|quizzes| quizzes.select{|q| (!q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q) && (!q.quiz_submissions.select{|qs| (qs.user == course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}.first
@@ -3289,6 +3777,13 @@ Steps:
 5. Click the "Submit Quiz" button to submit your survey responses.'
   })
 
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda{|quizzes| quizzes.select{|q| (q.quiz_type == 'survey')}},
+    task
+  ))
+
   task.populate(test_course) {|course, task|
 
     quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q) && (q.quiz_type == 'survey')}.first
@@ -3316,6 +3811,17 @@ Steps:
     answer_type: 'Numeric',
     parameterized_text: 'Task: View the results of your second attempt on the "[[Quiz]]" in the "[[Course]]" course, and report the time it took in minutes to complete that attempt as displayed in the Last Attempt Details section.'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'quiz',
+    test_course.quizzes,
+    lambda {|quizzes| quizzes.select{|q| 
+      q.reload
+      
+      (!q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.attempt == 2)}.first.nil?)
+      }},
+      task
+  ))
 
   task.populate(test_course) {|course, task|
 
@@ -3359,6 +3865,16 @@ Steps:
     answer_type: "Text",
     parameterized_text:'Task: View the feedback you received from [[User]] for the "[[Discussion]]" peer-reviewed discussion by accessing the Feedback tray from the Course Grades page in your "[[Course]]" course. What was the comment that [[User]] left for your submission?'
   })
+
+  resource_manifest.add_resource_request(ResourceRequest.new(
+    'discussion',
+    test_course.discussions,
+    lambda {|discussions| discussions.select{|d| 
+      (!d.assignment.nil?) && 
+      (!d.assignment.submissions.select{|s| (s.user == test_course.logged_in_user) && (s.submission_comments.length > 0)}.first.nil?)
+    }},
+    task
+  ))
 
   task.populate(test_course){|course, task|
 
@@ -3497,19 +4013,16 @@ Steps:
 
   puts "#{tasks.length} tasks defined!"
 
-  task_objects = []
+  # resource_manifest.compute_task_populate_order(tasks)
+  resource_manifest.print_resource_requests()
+  # resource_manifest.find_valid_order()
+  #resource_manifest.populate_tasks(tasks)
+
+  resource_manifest.populate_tasks_v2(tasks)
+
+  return tasks
+
   
-  tasks.each {|t| 
-    #puts "Task: #{t.id}\n#{t.instance_text}"
-    task_objects << t.to_hash
-  }
-
-  task_instances = aggregate_task_objects(task_objects)
-  puts "generated #{task_instances.length} task instances"
-
-  # output the instances to yaml/json format.
-  File.open('tasks.json', 'w') {|json_file| json_file.write task_instances.to_json}
-  File.open('tasks.yaml', "w") {|yaml_file| yaml_file.write task_instances.to_yaml}
 
 end
 
@@ -3521,6 +4034,30 @@ docker-compose run --remove-orphans web bundle exec rails runner spec/fixtures/d
 =end
 
 #explore
-test_course = generate_test_environment
-create_task_instances(test_course)
+test_courses = generate_test_environment
+all_tasks = []
+test_courses.each{|test_course|
+  task_instances = create_task_instances(test_course)
+
+  if task_instances
+    all_tasks += task_instances
+  else
+    puts task_instances
+  end
+}
+
+task_objects = []
+  
+all_tasks.each {|t| 
+  #puts "Task: #{t.id}\n#{t.instance_text}"
+  task_objects << t.to_hash
+}
+
+task_instances = aggregate_task_objects(task_objects)
+puts "generated #{task_instances.length} task instances"
+
+# output the instances to yaml/json format.
+File.open('tasks.json', 'w') {|json_file| json_file.write task_instances.to_json}
+File.open('tasks.yaml', "w") {|yaml_file| yaml_file.write task_instances.to_yaml}
+
 #puts Account.default.settings.pretty_inspect

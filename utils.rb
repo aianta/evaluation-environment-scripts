@@ -13,6 +13,391 @@ require_relative "../../factories/assessment_request"
 require 'json'  
 require 'yaml'
 
+class ResourceRequest
+
+  attr_accessor :type
+  attr_accessor :resource_function
+  attr_accessor :task
+  attr_accessor :source
+
+  def initialize(type, source, predicate, task)
+    @type = type
+    @source = source
+    @predicate = predicate
+    @task = task
+    @valid_resources_cache = nil
+  end
+
+  def get_resources_satisfying_request()
+    if @valid_resources_cache.nil?
+      @valid_resources_cache = @predicate.call(@source)
+      return @valid_resources_cache
+    else
+      return @valid_resources_cache
+    end
+
+  end
+
+  def get_percent_valid_resources()
+    (self.get_resources_satisfying_request().length.to_f / self.source.length.to_f) * 100
+  end
+
+
+end
+
+class ResourceManifest
+
+  attr_accessor :manifest
+
+
+  def initialize(course)
+
+    @course = course
+    # Resource -> Task
+    @manifest = {}
+    @resource_requests = []
+  end
+
+  def compute_task_populate_order(all_tasks)
+    
+    # Compute some course stats to assess how much of each resource there is.
+    # This is for debugging purposes.
+    stats = [
+      ['assignment', @course.assignments.length],
+      ['group', @course.groups.length],
+      ['quiz', @course.quizzes.length],
+      ['page', @course.pages.length],
+      ['discussion', @course.discussions.length],
+      ['announcement', @course.announcements.length],
+      ['module', @course.modules.length]
+  ]
+
+    stats = stats.sort{|a,b| a[1] <=> b[1]}
+    stats
+
+    puts "Course stats:"
+    puts stats
+
+    # Sort resource requests by the ascending order of % valid resources, IE: a task that can work with a large percentrage of available resources will be lower in the list.
+    @resource_requests = @resource_requests.sort{|a,b| 
+    a.get_percent_valid_resources() <=> b.get_percent_valid_resources() }
+
+    task_hash = {}
+
+    # Tasks can have multiple resource requests, so we need to condense this down, keep only the lowest % valid resources measured for each task.
+    @resource_requests.each do |request|
+      if !task_hash[request.task] 
+        task_hash[request.task] = request.get_percent_valid_resources()
+      else
+        # If there are multiple requests for a task, use the lowest % valid resources for the task.
+        if task_hash[request.task] > request.get_percent_valid_resources()
+          task_hash[request.task] = request.get_percent_valid_resources()
+        end
+
+      end
+    end
+
+    # Not all tasks make resource requests, never the less they also need to have their populate functions called, so merge them into our task hash with values of 100.0 meaning they will execute at the end with other tasks that can work with many different resources.
+
+    all_tasks.each {|task|
+
+      if !task_hash.key?(task)
+        puts "Added #{task.id} to populate order"
+        task_hash[task] = 100.0
+      end
+
+    }
+
+    sorted_tasks = task_hash.map {|k,v| [k, v]}.sort{|a,b| a[1] <=> b[1]}
+
+    puts "Sorted tasks [#{sorted_tasks.length}]"
+    sorted_tasks.each {|item|
+      puts "Task #{item[0].id}: #{item[1]}"
+    }
+
+  end
+
+  def populate_tasks(tasks)
+    task_queue = self.compute_task_populate_order(tasks)
+    task_queue.each_with_index {|task,index|
+      puts "Resolving resources for task #{task[0].id} [#{index+1}/#{task_queue.length}]"
+      task[0].populate_logic.call()
+    }
+  end
+
+  def compute_task_options_for_type(type)
+    requests = @resource_requests.select{|r| r.type == type}
+
+    # TODO: unsure if we need this sort first... 
+    requests = requests.sort{|a,b| a.get_resources_satisfying_request().length <=> b.get_resources_satisfying_request().length}
+    
+    # Find an order for selecting resources such that all tasks have valid resources available to them...
+    valid_permutations = self.compute_permutations(requests)
+    if valid_permutations.nil?
+      print "No valid permutation found, you may be missing a requires resource if this message keeps appearing..."
+      return nil
+    end
+
+    valid_permutation = valid_permutations.sample
+    task_options = {}
+
+    requests.each_with_index {|request, index|
+      if !task_options[request.task]
+        task_options[request.task] = [valid_permutation[index]]
+      else
+        task_options[request.task] << valid_permutation[index]
+      end
+    }
+
+    return task_options
+  end
+
+  def populate_tasks_v2(tasks)
+
+    original_groups = @course.groups
+    original_pages = @course.pages
+    original_assignments = @course.assignments
+    original_discussions = @course.discussions
+    original_modules = @course.modules
+    original_announcements = @course.announcements
+    original_quizzes = @course.quizzes
+
+    group_options = self.compute_task_options_for_type('group')
+    page_options = self.compute_task_options_for_type('page')
+    assignment_options = self.compute_task_options_for_type('assignment')
+    discussion_options = self.compute_task_options_for_type('discussion')
+    module_options = self.compute_task_options_for_type('module')
+    announcement_options = self.compute_task_options_for_type('announcement')
+    quiz_options = self.compute_task_options_for_type('quiz')
+
+    tasks_with_options = group_options.keys() + page_options.keys() + assignment_options.keys() + discussion_options.keys() + announcement_options.keys() + quiz_options.keys()
+    tasks_with_options = tasks_with_options.uniq
+
+    puts "Populating order-sensitive tasks..."
+
+    tasks.select{|t| tasks_with_options.include? t }.each{|task|
+      puts "Populating #{task.id}"
+
+      if group_options.key?(task)
+        @course.groups = group_options[task]
+      else
+        @course.groups = []
+      end
+
+      if page_options.key?(task)
+        @course.pages = page_options[task]
+      else
+        @course.pages = []
+      end
+
+      if assignment_options.key?(task)
+        @course.assignments = assignment_options[task]
+      else
+        @course.assignments = []
+      end
+
+      if discussion_options.key?(task)
+        @course.discussions = discussion_options[task]
+      else
+        @course.discussions = []
+      end
+
+      if module_options.key?(task)
+        @course.modules = module_options[task]
+      else
+        @course.modules = []
+      end
+
+      if announcement_options.key?(task)
+        @course.announcements = announcement_options[task]
+      else
+        @course.announcements = []
+      end
+
+      if quiz_options.key?(task)
+        @course.quizzes = quiz_options[task]
+      else
+        @course.quizzes = []
+      end
+      
+      puts "Group Options: #{@course.groups.map{|v| v.name}.join(' ')}"
+      puts "Page Options: #{@course.pages.map{|v|v.title}.join(' ')}"
+      puts "Assignment Options: #{@course.assignments.map{|v| v.nil?'nil': v.title}.join(' ')}"
+      puts "Discussion Options: #{@course.discussions.map{|v| v.title}.join(' ')}"
+      puts "Module Options: #{@course.modules.map{|v| v.name}.join(' ')}"
+      puts "Announcement Options: #{@course.announcements.map{|v| v.title}.join(' ')}"
+      puts "Quiz Options: #{@course.quizzes.map{|v| v.title}.join(' ')}"
+
+      task.populate_logic.call()
+
+      # Reset resources
+      @course.groups = original_groups
+      @course.pages = original_pages
+      @course.assignments = original_assignments
+      @course.discussions = original_discussions
+      @course.modules = original_modules
+      @course.announcements = original_announcements
+      @course.quizzes = original_quizzes
+    }
+
+    puts "Populating remaining tasks..."
+    tasks.select{|t| !tasks_with_options.include? t}.each{|task|
+      task.populate_logic.call()
+    }
+
+  end
+
+  def find_valid_order()
+
+    group_requests = @resource_requests.select{|r| r.type == 'group'}
+    
+    group_tasks = group_requests.map{|r| r.task}
+
+
+    group_requests = group_requests.sort{|a,b| a.get_resources_satisfying_request().length <=> b.get_resources_satisfying_request().length}
+
+    print("Group requests")
+    group_requests.each {|r|
+      puts "#{r.task.id} - [#{r.get_resources_satisfying_request().length}] - #{self.resources_to_string(r)}"
+    }
+  
+
+    valid_permutations = self.compute_permutations(group_requests)
+    valid_permutation = valid_permutations[0]
+    task_options = {}
+
+    group_requests.each_with_index {|request, index|
+      if !task_options[request.task]
+        task_options[request.task] = [valid_permutation[index]]
+      else
+        task_options[request.task] << valid_permutation[index]
+      end
+    }
+
+    puts "Task Options"
+    task_options.each{|k,v|
+      puts "#{k.id} - #{v.map{|e| e.name}.join(' ')}"
+    }
+
+
+  end
+
+
+  def compute_permutations(requests)
+
+    permutations = []
+
+    requests.each{|r| 
+      if permutations.length == 0
+        r.get_resources_satisfying_request().each{|resource| permutations << [resource]}
+      else
+        new_permutations = []
+
+        permutations.each {|permutation| 
+          
+          r.get_resources_satisfying_request().select{|res| !permutation.include? res}.each {|resource|
+            
+            new_permutation = []
+            permutation.each {|item|
+              new_permutation << item
+            }
+            new_permutation << resource
+            new_permutations << new_permutation
+            
+            
+          }
+        }
+
+        # Prepare the next round of permutations while pruning permutations that contain duplicates.
+        permutations = new_permutations.select{|p| p.uniq.length == p.length} 
+
+        if permutations.length > 256
+          permutations = permutations.sample(256)
+        end
+
+      puts "#{permutations.length} unique permutations of size #{permutations[0].length}"
+      # permutations[0..5].each{|p|
+      #   p = p.map {|v| v.name}
+      #   puts p.join(' ')
+      # }
+
+      end
+
+
+
+    }
+
+    
+    permutations
+
+
+  end
+
+  def requests_to_options(requests)
+    options = []
+    requests.each {|r| options << r.get_resources_satisfying_request()}
+  end
+
+  def print_options(options)
+    options.each {|item| 
+      puts item
+  }
+  end
+
+  def remove_from_options(element, options)
+    options.each {|option_set| option_set.delete(element)}
+  end
+
+  def print_resource_requests()
+
+  
+
+    @resource_requests = @resource_requests.sort{|a,b| 
+    a.get_percent_valid_resources() <=> b.get_percent_valid_resources() }
+
+    @resource_requests.each_with_index do |request, index|
+      percent_valid = request.get_percent_valid_resources()
+
+      puts "Request[#{index}] - #{request.task.id} - #{request.type} - # of valid resources: #{request.get_resources_satisfying_request().length} - #{percent_valid}% #{self.resources_to_string(request)}"
+    end
+  end
+
+  def add_resource_request(request)
+    @resource_requests << request
+  end
+
+  def resources_to_string(request)
+    resources = request.get_resources_satisfying_request()
+    result = []
+    case request.type
+    when 'group'
+      result = resources.map{|v| v.name}
+    when 'assignment'
+      result = resources.map{|v| v.title}
+    when 'page'
+      result = resources.map{|v| v.title}
+    when 'announcement' 
+      result = resources.map{|v| v.title}
+    when 'discussion'
+      result = resources.map{|v| v.title}
+    when 'module'
+      result = resources.map{|v| v.name}
+    when 'quiz'
+      result = resources.map{|v| v.title}
+    end
+  
+    return result
+  end
+
+
+
+
+
+
+
+
+end
+
 class AgentTask
 
   @@groups = []
@@ -82,6 +467,7 @@ class AgentTask
   attr_accessor :type
   attr_accessor :answer_type
   attr_accessor :answer_key
+  attr_accessor :populate_logic
 
 
   def initialize(data)
@@ -169,7 +555,8 @@ class AgentTask
     @instance_username = test_course.logged_in_user.email
     @instance_password = test_course.logged_in_user_password
 
-    yield test_course, self
+    @populate_logic = lambda {yield test_course, self}
+
 
   end
 
@@ -242,14 +629,14 @@ class TestCourse
   attr_reader :students
   attr_reader :classmates
   attr_reader :teachers
-  attr_reader :discussions
-  attr_reader :assignments
-  attr_reader :announcements
-  attr_reader :quizzes
-  attr_reader :groups
-  attr_reader :pages
+  attr_accessor :discussions
+  attr_accessor :assignments
+  attr_accessor :announcements
+  attr_accessor :quizzes
+  attr_accessor :groups
+  attr_accessor :pages
   attr_reader :teacher
-  attr_reader :modules
+  attr_accessor :modules
   attr_reader :unused_pages
   attr_reader :group #TODO: temp
 
