@@ -252,13 +252,33 @@ class ResourceManifest
         @course.quizzes = []
       end
       
-      puts "Group Options: #{@course.groups.map{|v| v.name}.join(' ')}"
-      puts "Page Options: #{@course.pages.map{|v|v.title}.join(' ')}"
-      puts "Assignment Options: #{@course.assignments.map{|v| v.title}.join(' ')}"
-      puts "Discussion Options: #{@course.discussions.map{|v| v.title}.join(' ')}"
-      puts "Module Options: #{@course.modules.map{|v| v.name}.join(' ')}"
-      puts "Announcement Options: #{@course.announcements.map{|v| v.title}.join(' ')}"
-      puts "Quiz Options: #{@course.quizzes.map{|v| v.title}.join(' ')}"
+      if @course.groups.length > 0
+        puts "Group Options: #{@course.groups.map{|v| v.name}.join(' ')}"
+      end
+
+      if @course.pages.length > 0
+        puts "Page Options: #{@course.pages.map{|v|v.title}.join(' ')}"
+      end
+
+      if @course.assignments.length > 0
+        puts "Assignment Options: #{@course.assignments.map{|v| v.title}.join(' ')}"
+      end
+
+      if @course.discussions.length > 0
+        puts "Discussion Options: #{@course.discussions.map{|v| v.title}.join(' ')}"
+      end
+
+      if @course.modules.length > 0
+        puts "Module Options: #{@course.modules.map{|v| v.name}.join(' ')}"
+      end
+
+      if @course.announcements.length > 0
+        puts "Announcement Options: #{@course.announcements.map{|v| v.title}.join(' ')}"
+      end
+
+      if @course.quizzes.length > 0
+        puts "Quiz Options: #{@course.quizzes.map{|v| v.title}.join(' ')}"
+      end
 
       task.populate_logic.call()
 
@@ -321,6 +341,8 @@ class ResourceManifest
 
     requests.each{|r| 
       if permutations.length == 0
+        puts "Seeding permutation search with inital request."
+        puts "#{r.task.id} - #{r.type} - # of valid resources #{r.get_resources_satisfying_request().length}"
         r.get_resources_satisfying_request().each{|resource| permutations << [resource]}
       else
         new_permutations = []
@@ -1010,6 +1032,7 @@ The student account will be assumed to be the logged in user for this course.
   @discussion = @course.discussion_topics.create!(data.except("replies"))
   @discussion.allow_rating = true
   @discussion.update_attribute(:allow_rating, true)
+  @discussion.unlock()
 
   @discussion.save!
   @discussion.reload
@@ -1026,6 +1049,18 @@ The student account will be assumed to be the logged in user for this course.
   @discussions << @discussion
   @discussion
 
+  end
+
+  def enroll_student(student)
+    course_with_student({
+      :active_all=> 1,
+      :account=>@root_account,
+      :course=>@course,
+      :user=>student
+    })
+    @enrollments << @enrollment
+    @classmates << student
+    @students << student
   end
 
   def create_classmate(data={
@@ -1139,6 +1174,7 @@ The student account will be assumed to be the logged in user for this course.
   end
 
   def create_discussion_reply(discussion, reply)
+
 
     replier = reply["user"]
     reply_text = reply["text"]

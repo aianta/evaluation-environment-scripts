@@ -1,4 +1,35 @@
 ---
+students:
+- name: Terrance Studentson
+  email: terrance@ualberta.ca
+  password: Xs224D3drZaR
+- name: Phillip Studentson
+  email: phillip@ualberta.ca
+  password: 6bE1G83JrT1i
+- name: Sarah Studentson
+  email: sarah@ualberta.ca
+  password: 30OubNfH3Z3T
+- name: Steven Studentson
+  email: steven@ualberta.ca
+  password: 62YubNzH6Z8T
+- name: Abigail Studentson
+  email: abigail@ualberta.ca
+  password: 3qI256uBMmoh
+- name: Alex Studentson
+  email: alex@ualberta.ca
+  password: nzV0K4L5Bzyb
+- name: Jared Studentson
+  email: jared@ualberta.ca
+  password: ch8DgQh7WV7e
+- name: Monica Studentson
+  email: monica@ualberta.ca
+  password: ZKnc0HeqKGvA
+- name: Ryan Studentson
+  email: ryan@ualberta.ca
+  password: f6ptLPMtaF3A
+- name: Lisa Studentson
+  email: lisa@ualberta.ca
+  password: GnriV4qZJnjJ
 courses:
 - name: Psychology 101
   code: "PSY101"
@@ -35,37 +66,6 @@ courses:
     name: Sammy Studentson
     email: sammy@ualberta.ca
     password: op3TPfE3J5MK
-  students:
-    - name: Terrance Studentson
-      email: terrance@ualberta.ca
-      password: Xs224D3drZaR
-    - name: Phillip Studentson
-      email: phillip@ualberta.ca
-      password: 6bE1G83JrT1i
-    - name: Sarah Studentson
-      email: sarah@ualberta.ca
-      password: 30OubNfH3Z3T
-    - name: Steven Studentson
-      email: steven@ualberta.ca
-      password: 62YubNzH6Z8T
-    - name: Abigail Studentson
-      email: abigail@ualberta.ca
-      password: 3qI256uBMmoh
-    - name: Alex Studentson
-      email: alex@ualberta.ca
-      password: nzV0K4L5Bzyb
-    - name: Jared Studentson
-      email: jared@ualberta.ca
-      password: ch8DgQh7WV7e
-    - name: Monica Studentson
-      email: monica@ualberta.ca
-      password: ZKnc0HeqKGvA
-    - name: Ryan Studentson
-      email: ryan@ualberta.ca
-      password: f6ptLPMtaF3A
-    - name: Lisa Studentson
-      email: lisa@ualberta.ca
-      password: GnriV4qZJnjJ
   modules:
     - name: Module 1
       workflow_state: active

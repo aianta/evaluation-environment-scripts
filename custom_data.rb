@@ -2,6 +2,8 @@ require_relative "../../factories/rubric_factory"
 require_relative "../../factories/rubric_association_factory"
 require_relative "../../factories/quiz_factory"
 require_relative "../../factories/outcome_factory"
+require_relative "../../factories/user_factory"
+require_relative "../../factories/pseudonym_factory"
 
 require_relative "./common"
 require_relative "./utils"
@@ -91,6 +93,32 @@ def generate_test_environment
 
   courses = [] # Holds the generated course objects
 
+  # Students are shared across all courses.
+  students = [] # Hold the student users objects
+
+  test_data['students'].each {|student_data|
+
+      student_data = {
+        :name=>student_data["name"],
+        :email=>student_data["email"],
+        :password=>student_data["password"]
+      }
+
+      puts student_data
+
+      puts "Creating student #{student_data[:name]}"
+
+      user_factory(student_data.merge({:active_user=>true}))
+      @user.pseudonyms.create!(
+        unique_id: student_data[:email],
+        password: student_data[:password],
+        password_confirmation: student_data[:password]
+      )
+      @user.email = student_data[:email]
+      students << @user
+
+  }  
+
 
   test_data["courses"].each {|course| 
     test_course = TestCourse.new({
@@ -127,17 +155,21 @@ def generate_test_environment
     puts "Testing"
     puts "Logged in user is #{_course.logged_in_user.name}"
 
+    # As of October 2, 2025: Students should be shared across courses. 
     # Fetch student test data and create enrolled students
-    course_data["students"].each { |student|
-      puts "Creating student #{student["name"]} in #{_course.course.name}"
+    # course_data["students"].each { |student|
+    #   puts "Creating student #{student["name"]} in #{_course.course.name}"
 
-      _course.create_classmate({
-        :student_email => student["email"],
-        :student_name => student["name"],
-        :student_password => student["password"]
-      })
+    #   _course.create_classmate({
+    #     :student_email => student["email"],
+    #     :student_name => student["name"],
+    #     :student_password => student["password"]
+    #   })
+    # }
 
-
+    students.each{|s|
+      puts "Enrolling #{s.name} into #{_course.course.name} course."
+      _course.enroll_student(s)
     }
 
 
