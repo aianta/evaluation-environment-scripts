@@ -12,8 +12,8 @@ require 'yaml'
 require 'securerandom'
 
 # Path from which course data is loaded when needed.
-# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
- $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+ $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 
 def generate_custom_course
   puts "Generating custom course"
@@ -4100,6 +4100,11 @@ test_courses.each{|test_course|
   else
     puts task_instances
   end
+
+  # Enroll all main users in all other courses to populate the dashboard nicely with course cards for each of them.
+  test_courses.select{|c| c != test_course }.each{|other_course| 
+    puts "Enrolling #{test_course.logged_in_user.name} in #{other_course.course.name}"
+    other_course.enroll_student(test_course.logged_in_user)}
 }
 
 task_objects = []
