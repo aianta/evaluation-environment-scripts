@@ -832,7 +832,10 @@ The student account will be assumed to be the logged in user for this course.
     if data["users"]
       data["users"].each {|user| 
         u = resolve_user_value(user, self)
-        group.add_user(u, "accepted", false)
+        # Only add users we were actually able to resolve
+        if !u.nil?
+          group.add_user(u, "accepted", false)
+        end
         # puts "Does #{group.name} allow self sign up? #{group.allow_self_signup? u }"
       }
     end
@@ -1242,6 +1245,8 @@ The student account will be assumed to be the logged in user for this course.
 
 
     end
+
+    return nil
 
   end
 
