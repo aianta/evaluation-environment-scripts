@@ -202,7 +202,7 @@ class ResourceManifest
     announcement_options = self.compute_task_options_for_type('announcement')
     quiz_options = self.compute_task_options_for_type('quiz')
 
-    tasks_with_options = group_options.keys() + page_options.keys() + assignment_options.keys() + discussion_options.keys() + announcement_options.keys() + quiz_options.keys()
+    tasks_with_options = group_options.keys() + page_options.keys() + assignment_options.keys() + discussion_options.keys() + announcement_options.keys() + quiz_options.keys() + module_options.keys()
     tasks_with_options = tasks_with_options.uniq
 
     puts "Populating order-sensitive tasks..."
@@ -236,6 +236,8 @@ class ResourceManifest
 
       if module_options.key?(task)
         @course.modules = module_options[task]
+        @course.pages = original_pages # Module tasks will also need access to these.
+        @course.assignments = original_assignments # Module tasks may also need access to assignments.
       else
         @course.modules = []
       end
@@ -1062,7 +1064,9 @@ The student account will be assumed to be the logged in user for this course.
       :user=>student
     })
     @enrollments << @enrollment
-    @classmates << student
+    if student != @logged_in_user
+      @classmates << student
+    end
     @students << student
   end
 
@@ -1096,7 +1100,7 @@ The student account will be assumed to be the logged in user for this course.
     
 
     data = data.merge({:assignment_group => @group})
-    assignment = @course.assignments.create!(data.except("peer_reviews", "replies"))
+    assignment = @course.assignments.create!(data.except("peer_reviews", "replies", "course"))
 
     # Create a dummy rubric for the assignment
     rubric_opts = {
@@ -1246,7 +1250,8 @@ The student account will be assumed to be the logged in user for this course.
 
     end
 
-    return nil
+    puts "Warning: Could not resolve user value #{user_value}, picking a random non-logged-in-user user..."
+    return course.classmates.sample
 
   end
 

@@ -12,8 +12,9 @@ require 'yaml'
 require 'securerandom'
 
 # Path from which course data is loaded when needed.
- $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
 def generate_custom_course
   puts "Generating custom course"
@@ -247,12 +248,14 @@ def generate_test_environment
         if quiz["submissions"]
 
         quiz["submissions"].each{|submission|
-          
+
+          puts "Processing quiz submission data for user #{submission['user']}"
           student = _course.resolve_user_value(submission["user"], _course)
 
           submission["attempts"].each_with_index{ |attempt, index|
 
             puts "Before quiz submission generation"
+            puts "Generating #{@quiz.title} quiz submission for student #{student.name}"
             qsub = @quiz.generate_submission(student)
             puts "After quiz submission generation"
             qsub.started_at = 1.minute.ago
@@ -305,10 +308,8 @@ def generate_test_environment
             end
             # qsub.record_answer(attempt["answers"][0])
             qsub.submission_data = attempt["workflow_state"] == 'untaken'? attempt["partial"] : attempt["answers"]
-            # qsub.submission_data = [{ points: 0, text: "7051", question_id: 128, correct: false, answer_id: 7051 }]
-            # qsub.submission_data = [{"quiz_question_id"=>"28", "answer"=>"100"}]
-            # qsub.submission_data = [{:points => 0, :question_id => 28, :answer_id => 200, :correct => false, :text=>"200"}]
-            qsub.score = attempt["workflow_state"] == 'uuntaken'? nil : 0
+           
+            qsub.score = attempt["workflow_state"] == 'untaken'? nil : 0
             qsub.finished_at = attempt["workflow_state"] == 'untaken'? nil:Time.now.utc
             qsub.workflow_state = attempt["workflow_state"]
 
@@ -927,6 +928,11 @@ def create_task_instances(test_course)
 
     user_2 = course.classmates.select {|classmate| (!AgentTask.users.include? classmate)}.first
 
+    if user_2.nil?
+      # Ideally this would be an unused user but it doesn't matter too much for this task. 
+      user_2 = course.classmates.select { |classmate| classmate != user_1}.first
+    end
+
     AgentTask.users << user_2
 
 
@@ -1274,8 +1280,10 @@ Steps to complete:
     user = course.classmates.select {|c| !AgentTask.users.include? c}.first
 
     if user.nil?
-      puts "Could not find user for task #{task.id}"
-      return 
+      puts "Could not find unused user for task #{task.id}"
+      
+      user = course.classmates.select{|c| c != course.logged_in_user}.sample
+       
     end
 
     AgentTask.users << user
@@ -2323,7 +2331,11 @@ Steps:
 
     page_id = _module.content_tags.select{|i| i.content_type == 'WikiPage'}.first.content_id
     item_id = _module.content_tags.select{|i| i.content_id == page_id}.first.id
-    page = course.pages.select{|p| p.id == page_id}.first
+
+    puts "looking for page with id #{page_id} in #{course.course.name}"
+    page = course.pages.select{|p| 
+    puts "Page: [#{p.id}] #{p.title}"
+    p.id == page_id}.first
     
     AgentTask.pages << page
 
