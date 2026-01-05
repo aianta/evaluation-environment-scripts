@@ -435,7 +435,8 @@ def generate_test_environment
       assignment_opts[:points_possible] = assignment["points_possible"]
       assignment_opts[:created_at] = assignment["created_at"]
       assignment_opts[:updated_at] = assignment["updated_at"]
-      assignment_opts[:submission_types] = assignment["submission_types"]
+      # Submission types should be a simple comma delimited string, eg: online_text_entry,online_url
+      assignment_opts[:submission_types] = assignment["submission_types"].join(",")
 
       a = _course.create_assignment(assignment_opts)
 
@@ -957,16 +958,15 @@ def create_task_instances(test_course)
   task = AgentTask.new({
     id: "0b62c5d4-a6fe-4083-9123-45e3087c1440",
     type: 'Side-effect',
-    evaluation_parameters: ["Group ID", "Discussion Message","Discussion Title"],
+    evaluation_parameters: ["Group ID", "Announcement Message","Announcement Title"],
     paths: ["/api/v1/groups/[[Group ID]]/discussion_topics"],
     methods: ["POST"],
     request_kvs: [
       {
-      "allow_rating":  "1",
-      "message": "<p>[[Discussion Message]]</p>",
-      "title": "[[Discussion Title]]"
+      "message": "<p>[[Announcement Message]]</p>",
+      "title": "[[Announcement Title]]"
       }],
-    parameterized_text: 'Task: In your group "[[Group]]" for the course [[Course]], create a new announcement with the title "[[Announcement]]" and the following content: "[[Announcement Message]]". Allow other users to like the announcement, and publish it.'
+    parameterized_text: 'Task: In your group "[[Group]]" for the course [[Course]], create a new announcement with the title "[[Announcement]]" and the following content: "[[Announcement Message]]" then publish it.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -995,9 +995,9 @@ def create_task_instances(test_course)
     task.update_initalized_text("Announcement", announcement_data["title"])
     task.update_initalized_text("Announcement Message", announcement_data["message"])
 
-    task.update_answer_key("Discussion Message", announcement_data["message"])
+    task.update_answer_key("Announcement Message", announcement_data["message"])
     task.update_answer_key("Group ID", group.id)
-    task.update_answer_key("Discussion Title", announcement_data["title"])
+    task.update_answer_key("Announcement Title", announcement_data["title"])
 
   }
 
@@ -1184,13 +1184,13 @@ def create_task_instances(test_course)
   resource_manifest.add_resource_request(ResourceRequest.new(
     'group',
     test_course.groups,
-    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) && (!g.discussion_topics.select {|dt| dt.user == test_course.logged_in_user}.first.nil?)}},
+    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) && (!g.discussion_topics.select {|dt| (dt.user == test_course.logged_in_user) && (!dt.is_announcement)}.first.nil?) }},
     task
   ))
 
   task.populate(test_course){|course,task|
 
-    group = course.groups.select {|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user) && (!g.discussion_topics.select {|dt| dt.user == course.logged_in_user}.first.nil?) }.first
+    group = course.groups.select {|g| (!AgentTask.groups.include? g) && (g.users.include? course.logged_in_user) && (!g.discussion_topics.select {|dt| (dt.user == test_course.logged_in_user) && (!dt.is_announcement)}.first.nil?) }.first
 
     if group.nil?
       puts "Cannot find group for task #{task.id} in #{course.course.name}"
@@ -1199,7 +1199,7 @@ def create_task_instances(test_course)
 
     AgentTask.groups << group
 
-    discussion_topic = group.discussion_topics.select{|dt| dt.user == course.logged_in_user}.first
+    discussion_topic = group.discussion_topics.select{|dt| (dt.user == course.logged_in_user) && (!dt.is_announcement) }.first
     
     if discussion_topic.nil?
       puts "Cannot find discussion topic for task #{task.id}"
@@ -2047,14 +2047,14 @@ Steps to complete:
   resource_manifest.add_resource_request(ResourceRequest.new(
     'group',
     test_course.groups,
-    lambda{|groups| groups.select{|g| (!g.announcements.select{|a| a.user == test_course.logged_in_user}.first.nil?) }},
+    lambda{|groups| groups.select{|g| (g.users.include? test_course.logged_in_user) && (!g.announcements.select{|a| a.user == test_course.logged_in_user}.first.nil?) }},
     task
     ))
 
 
   task.populate(test_course) {|course, task|
 
-    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (!g.announcements.select{|a| a.user == course.logged_in_user}.first.nil?) }.first
+    group = course.groups.select{|g| (!AgentTask.groups.include? g) && (g.users.include? test_course.logged_in_user) && (!g.announcements.select{|a| a.user == course.logged_in_user}.first.nil?) }.first
 
     if group.nil?
       puts "Could not find group for task #{task.id}"
@@ -2844,7 +2844,7 @@ Steps:
     "operationName": "UpdateDiscussionEntry",
     "message": "<p>I believe renewable energy is essential for our future.</p>"
     }],
-    parameterized_text: 'Task: In your {{Course}} course, edit your reply in the "[[Discussion]]" discussion by changing the text to "I believe renewable energy is essential for our future." and save your changes.'
+    parameterized_text: 'Task: In your [[Course]] course, edit your reply in the "[[Discussion]]" discussion by changing the text to "I believe renewable energy is essential for our future." and save your changes.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3672,7 +3672,6 @@ Instructions:
   tasks << task
 
   task = AgentTask.new({
-    id: '0b71d13d-f7dd-4a09-b575-6d6677b6e70c',
     type: 'Information Seeking',
     answer_type: 'Date Time',
     parameterized_text: 'Task: In the course "[[Course]]" view all modules, expand the module titled [[Module]]" and identify the due date for the assignment named "[[Assignment]]."'
