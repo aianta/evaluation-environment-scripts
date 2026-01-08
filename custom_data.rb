@@ -4,6 +4,7 @@ require_relative "../../factories/quiz_factory"
 require_relative "../../factories/outcome_factory"
 require_relative "../../factories/user_factory"
 require_relative "../../factories/pseudonym_factory"
+require_relative "../../factories/planner_override_factory"
 
 require_relative "./common"
 require_relative "./utils"
@@ -13,71 +14,8 @@ require 'securerandom'
 
 # Path from which course data is loaded when needed.
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
-# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
-
-def generate_custom_course
-  puts "Generating custom course"
-  @student_list = []
-  @enrollment_list = []
-  @course_name = "Custom Course By Alex w/Discussion"
-  course_with_teacher(
-    account: @root_account,
-    active_course: 1,
-    active_enrollment: 1,
-    course_name:@course_name,
-    name: "Robot Alex 2"
-  )
-  @teacher = @user
-  @teacher.pseudonyms.create!(
-    unique_id: "newteacher#{@teacher.id}@example.com",
-    password: "password",
-    password_confirmation: "password"
-  )
-  @teacher.email = "newteacher#{@teacher.id}@example.com"
-  @teacher.accept_terms
-  @teacher.register!
-  puts "Successfully generated custom course!"
-
-  puts "Adding a student"
-
-  course_with_student(
-    account: @root_account,
-    active_all: 1,
-    course: @course,
-    name: "Da Student"
-  )
-
-  @enrollment_list << @enrollment
-  email = "daStudent#{SecureRandom.alphanumeric(10)}@ualberta.ca"
-  @user.pseudonyms.create!(
-    unique_id: email,
-    password: "password",
-    password_confirmation: "password"
-  )
-  @user.email = email
-  @user.accept_terms
-  @student_list << @user
-
-  puts @course
-
-  @course.conditional_release = true
-  @course.save!
-
-  @student = @user
-
-  @topic = @course.discussion_topics.create!(title: "A class discussion", message: "I'd like us to have a discussion.", user: @teacher, discussion_type: "threaded")
-  @root_reply = @topic.reply_from(user: @student, text: "Sure!")
-  @teacher_reply = @root_reply.reply_from(user: @teacher, text: "Thanks!")
-
-  @all_entries = [@root_reply, @teacher_reply]
-  @all_entries.each(&:reload)
-
-  @topic.reload
-
-
-
-end
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
 
 def generate_test_environment
@@ -213,6 +151,9 @@ def generate_test_environment
           context: _course.course
         )
         @assignment.rubric_association.save!
+
+      
+
         @assignment.reload
         @assignment.save!
 
@@ -416,6 +357,13 @@ def generate_test_environment
 
       _course.create_announcement(announcement)
 
+      override = planner_override_model(user: _course.logged_in_user, plannable: @announcement, marked_complete: true, dismissed: true)
+      override.reload
+      override.save!
+
+      # override = @announcement.planner_overrides.create!(user: _course.logged_in_user)
+      # override.dismissed = true
+      # override.save!
 
     }
 
@@ -457,6 +405,13 @@ def generate_test_environment
         context: _course.course
       )
       a.rubric_association.save!
+
+      # # Planner override
+      # override = a.planner_overrides.create!(user: _course.logged_in_user)
+      # override.update_attribute(:dismissed, true)
+      # override.reload
+      # override.save!
+
       a.reload
       a.save!
 
@@ -1468,6 +1423,7 @@ Steps to complete:
 
   tasks << task
 
+
   task = AgentTask.new({
     id: '382d57c2-b2e5-4024-9c05-9c5d195d2a27',
     evaluation_parameters: ["Assignment ID"],
@@ -1477,19 +1433,21 @@ Steps to complete:
     "marked_complete": true,
     "plannable_id": "[[Assignment ID]]"
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," use the Course Home Page to remove the "[[Assignment]]" assignment from your To Do list in the sidebar.'
+    parameterized_text: 'Task: In the course "[[Course]]" remove the assignment with the title "[[Assignment]]" from your list of To Dos.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
     'assignment',
     test_course.assignments, 
-    lambda{|assignments| assignments.select{true}},
+    # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
+    lambda{|assignments| assignments.select{|a| (a.submissions.where(user_id: course.logged_in_user).first.nil?)}},
     task
   ))
 
   task.populate(test_course) {|course, task|
 
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a)}.first
+    # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submissions.where(user_id: course.logged_in_user).first.nil?)}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"

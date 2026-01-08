@@ -786,6 +786,8 @@ The student account will be assumed to be the logged in user for this course.
     @logged_in_user_password = data[:student_password]
 
     @course.root_account.enable_feature! :discussions_reporting
+    @course.root_account.settings[:suppress_assignment] = false
+    @course.root_account.save
 
 
   end
@@ -1001,6 +1003,8 @@ The student account will be assumed to be the logged in user for this course.
     }
       
     end
+
+    
 
     @announcement
 
