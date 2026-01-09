@@ -3591,12 +3591,11 @@ Instructions:
 
   task = AgentTask.new({
     id: 'fa70e65c-16fb-4d03-9041-bcf07cf6ae02',
-    evaluation_parameters: ["Discussion ID", "User ID"],
+    evaluation_parameters: ["Stream Item ID"],
     methods: ["POST"],
-    paths: ["/api/v1/planner/overrides"],
+    paths: ["/dashboard/ignore_stream_item/[[Stream Item ID]]"],
     request_kvs: [{
-    "plannable_id": "[[Discussion ID]]",
-    "user_id": "[[User ID]]"
+    "_method": "DELETE"
     }],
     parameterized_text: 'Task: In the course "[[Course]]," find the announcement titled "[[Announcement]]" in your Course Activity Stream and remove this notification from your activity stream.'
   })
@@ -3622,8 +3621,15 @@ Instructions:
     task.update_initalized_text('Course', course.course.name)
     task.update_initalized_text('Announcement', announcement.title)
 
-    task.update_answer_key("Discussion ID", announcement.id)
-    task.update_answer_key("User ID", course.logged_in_user.id)
+    stream_item = StreamItem.where(asset_id: announcement.id, asset_type: 'DiscussionTopic').first
+
+    if stream_item.nil?
+      puts "Could not find related stream item for task #{task.id}"
+      return
+    end
+
+    task.update_answer_key("Stream Item ID", stream_item.id )
+   
 
   }
 
