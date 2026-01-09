@@ -819,7 +819,7 @@ def create_task_instances(test_course)
     id: "117ad520-4107-4488-9101-a2a951daebdf",
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: View the rubric for the quiz titled "[[Quiz]]" in the course "[[Course]]" by navigating to the Grades page, clicking on "[[Quiz]]," and then clicking the "Show Rubric" link on the submission details page. What is the sum total number of points possible across all criteria on the rubric?'
+    parameterized_text: 'Task: View the rubric for the quiz titled "[[Quiz]]" in the course "[[Course]]" by navigating to the Grades page, clicking on "[[Quiz]]" and then clicking the "Show Rubric" link on the submission details page. What is the sum total number of points possible across all criteria on the rubric?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1063,7 +1063,7 @@ def create_task_instances(test_course)
     request_kvs: [{
       "question_[[Question Index]]": "[[Answer]]"
       }],
-    parameterized_text: 'Task: In the course "[[Course]]," open the quiz titled "[[Quiz]]" and answer Question [[Question Index]], which is a short answer question, by typing "[[Answer]]" into the provided text box.'
+    parameterized_text: 'Task: In the course "[[Course]]" open the quiz titled "[[Quiz]]" and answer Question [[Question Index]], which is a short answer question, by typing "[[Answer]]" into the provided text box.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1176,13 +1176,7 @@ def create_task_instances(test_course)
     id: '19816faf-81ee-4235-8228-eb3d45e6bad3',
     type: 'Information Seeking',
     answer_type: 'Date Time',
-    parameterized_text: 'Task: View the details of the "[[Assignment]]" assignment in the "[[Course]]" course, and return its due date.
-
-Steps to complete:
-
-1. In the Course Navigation for "[[Course]]," click the Assignments link.
-2. On the Assignments Index page, locate and click on the assignment titled "[[Assignment]]."
-3. On the Assignment Summary page, review the assignment title, due date, points possible, and read any instructions provided by the instructor in the Details section.'
+    parameterized_text: 'Task: View the details of the "[[Assignment]]" assignment in the "[[Course]]" course, and return its due date.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1225,7 +1219,7 @@ Steps to complete:
     "subject": "Hi!",
     "recipients": ["[[User ID]]"]
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," use the People page to search for the user named "[[User]]," view their profile details, and send them a message with the text: "Hi, I have a question about the lab assignment. Can we discuss it?" and the subject line "Hi!".'
+    parameterized_text: 'Task: In the course "[[Course]]" use the People page to search for the user named "[[User]]" view their profile details, and send them a message with the text: "Hi, I have a question about the lab assignment. Can we discuss it?" and the subject line "Hi!".'
   })
 
 
@@ -1291,7 +1285,7 @@ Steps to complete:
     id: '2fb04821-58a4-4b0e-90b9-2b24882f4582',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: In the course "[[Course]]," use the Quizzes page to find the quiz titled "[[Quiz]]", report the number of questions this quiz has.'
+    parameterized_text: 'Task: In the course "[[Course]]" use the Quizzes page to find the quiz titled "[[Quiz]]", report the number of questions this quiz has.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1391,7 +1385,7 @@ Steps to complete:
     id: '37949dc8-cc9a-46ec-9a04-9fc70de7739a',
     type: 'Information Seeking',
     answer_type: 'Date Time',
-    parameterized_text: 'Task: In the course "[[Course]]," use the Assignments page to search for the assignment titled "[[Assignment]]." When is this assignment due?'
+    parameterized_text: 'Task: In the course "[[Course]]" use the Assignments page to search for the assignment titled "[[Assignment]]". When is this assignment due?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1476,7 +1470,7 @@ Steps to complete:
     "message": "<p>[[Discussion Message]]</p>",
     "title": "[[Discussion Title]]"
     }],
-    parameterized_text: 'Task: In your "[[Group]]" group, create a new discussion titled "[[Discussion]]," write "[[Discussion Message]]" allow group members to like the discussion, and add it to other group members\' to-do lists.'
+    parameterized_text: 'Task: In your "[[Group]]" group, create a new discussion titled "[[Discussion]]" write "[[Discussion Message]]" allow group members to like the discussion, and add it to other group members\' to-do lists.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1572,14 +1566,7 @@ Steps to complete:
     id: 'a7ab7dbf-7c80-4a13-80a4-f09947504d51',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: Check if you can retake the "[[Quiz]]" in the "[[Course]]" course and report how many attempts you have remaining.
-
-Steps:
-
-1. In the "[[Course]]" course, click the Quizzes link in the course navigation.
-2. Click the title "[[Quiz]]" to open the quiz.
-3. On the quiz page, view the number of attempts you have taken and the number of attempts remaining.
-4. Record the number of attempts you have remaining for the "[[Quiz]]."'
+    parameterized_text: 'Task: Check if you can retake the "[[Quiz]]" in the "[[Course]]" course and report how many attempts you have remaining.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1616,14 +1603,7 @@ Steps:
     id: '1c156f92-b926-4817-b78a-b8ad85de2484',
     type: 'Information Seeking',
     answer_type: 'Text',
-    parameterized_text: 'Task: View the comments left by your instructor ([[Teacher]]) on your "[[Assignment]]" assignment in the "[[Course]]" course. What was the feedback [[Teacher]] gave you?
-
-Steps to complete:
-1. In Global Navigation, click the "Courses" link, then select "[[Course]]."
-2. In Course Navigation, click the "Grades" link.
-3. Locate the "[[Assignment]]" assignment in the grades list.
-4. Click the Comment icon next to the "[[Assignment]]" assignment to view your instructor\'s comments.
-5. Read all comments so that the unread indicator disappears.',
+    parameterized_text: 'Task: View the comments left by your instructor ([[Teacher]]) on your "[[Assignment]]" assignment in the "[[Course]]" course. What was the feedback [[Teacher]] gave you?',
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1689,7 +1669,7 @@ Steps to complete:
     id: '1bfdc4bc-1ab2-4846-b840-4c65d9f9c83f',
     type: 'Information Seeking',
     answer_type: 'Text',
-    parameterized_text: 'Task: In the Canvas course "[[Course]]," locate and view the peer feedback you received for the assignment titled "[[Assignment]]" by accessing the submission details page. What was the feedback [[User]] provided to your submission?'
+    parameterized_text: 'Task: In the Canvas course "[[Course]]" locate and view the peer feedback you received for the assignment titled "[[Assignment]]" by accessing the submission details page. What was the feedback [[User]] provided to your submission?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1744,7 +1724,7 @@ Steps to complete:
       "forcedReadState": true,
       "read": false
       }],
-    parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]," and manually mark the reply from "[[User]]" as unread.'
+    parameterized_text: 'Task: In the course "[[Course]]" open the discussion titled "[[Discussion]]" and manually mark the reply from "[[User]]" as unread.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1807,7 +1787,7 @@ Steps to complete:
     "discussionTopicId": "[[Announcement ID]]",
     "message": "[[_includes='@[[User Name]]']]"
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," reply to the announcement titled "[[Announcement]]" by posting the message "Great announcement, @[[User]]! Looking forward to this week." and mention the user [[User]] in your reply.'
+    parameterized_text: 'Task: In the course "[[Course]]" reply to the announcement titled "[[Announcement]]" by posting the message "Great announcement, @[[User]]! Looking forward to this week." and mention the user [[User]] in your reply.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1893,7 +1873,7 @@ Steps to complete:
       "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"
     ],
     request_kvs: [{}, {}],
-    parameterized_text: 'Task: Take the quiz titled "[[Quiz]]" in the course "[[Course]]," answering each question as it appears on the screen, and use the Next button to advance to the next question after answering. Do not leave any question blank.'
+    parameterized_text: 'Task: Take the quiz titled "[[Quiz]]" in the course "[[Course]]" answering each question as it appears on the screen, and use the Next button to advance to the next question after answering. Do not leave any question blank.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -1940,17 +1920,7 @@ Steps to complete:
     methods: ["DELETE"],
     paths: ["/api/v1/groups/[[Group ID]]/pages/[[Page Slug]]"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Delete the page titled "[[Page]]" from the "[[Group]]" on your [[Course]] course in Canvas.
-
-Steps to complete:
-
-1. In Global Navigation, click the "Groups" link.
-2. Select "[[Group]]" from your list of groups.
-3. In the group navigation, click the "Pages" link.
-4. Click the "View All Pages" button.
-5. In the Pages Index, select the checkbox next to the page titled "[[Page]]".
-6. Click the "Delete" button.
-7. In the confirmation dialog, click the "Delete" button to confirm deletion of the "[[Page]]" page.'
+    parameterized_text: 'Task: Delete the page titled "[[Page]]" from the "[[Group]]" on your [[Course]] course in Canvas.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2073,7 +2043,7 @@ Steps to complete:
     "title": "[[Discussion Title]]",
     "message": "<p>[[Discussion Message]]</p>"
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," create a new course discussion titled "[[Discussion]]." In the discussion content, enter the following text: "[[Discussion Message]]" Save the discussion.'
+    parameterized_text: 'Task: In the course "[[Course]]" create a new course discussion titled "[[Discussion]]" In the discussion content, enter the following text: "[[Discussion Message]]" Save the discussion.'
   })
 
   task.populate(test_course) {|course, task|
@@ -2104,7 +2074,7 @@ Steps to complete:
     "editing_roles": "members.public",
     "notify_of_update": "1"
     }],
-    parameterized_text: 'Task: In the "[[Group]]," create a new group page titled "[[Page]]." In the page content, enter the following text: "[[Page Message]]" Set the page so that anyone can edit it, and check the box to notify users that this content has changed. Save the page.'
+    parameterized_text: 'Task: In the "[[Group]]" create a new group page titled "[[Page]]". In the page content, enter the following text: "[[Page Message]]" Set the page so that anyone can edit it, and check the box to notify users that this content has changed. Save the page.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2148,17 +2118,7 @@ Steps to complete:
     "_type": "form data",
     "submission[comment]": "[[_includes='Great+feedback+received!']]"
     }],
-    parameterized_text: 'Task: Add a text comment with an emoji to your submission for the assignment "[[Assignment]]" in the course "[[Course]]," saying "Great feedback received! ".
-
-Steps:
-
-1. In Canvas, navigate to your "[[Course]]" course.
-2. Click the "Grades" link in the course navigation.
-3. Click the assignment title "[[Assignment]]."
-4. In the Submission Details page, locate the "Add a Comment" area.
-5. Type the comment: Great feedback received!
-6. Click the Emoji icon and type a smiling face or select a smiling face emoji to add it to your comment.
-7. Click the "Save" button to submit your comment.'
+    parameterized_text: 'Task: Add a text comment with an emoji to your submission for the assignment "[[Assignment]]" in the course "[[Course]]" saying "Great feedback received!".'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2202,15 +2162,7 @@ Steps:
     id: 'bd1583a6-7c16-4d45-9cfb-e6bce6d088a0',
     type: 'Information Seeking',
     answer_type: 'Text',
-    parameterized_text: 'Task: Check if you have a peer review discussion to complete for the course "[[Course]]" and identify the name of a student whose post you need to review.
-
-Steps:
-
-1. Log in to Canvas and go to your Dashboard.
-2. In the Global Activity Stream, look for any recent activity related to peer review discussions for "[[Course]]."
-3. Click the "Show More" link if needed to expand the list of activities.
-4. Locate the peer review notification for the discussion titled "[[Discussion]]."
-5. Note the name of a student assigned to you for peer review.'
+    parameterized_text: 'Task: Check if you have a peer review discussion to complete for the course "[[Course]]" and identify the name of a student whose post you need to review.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2255,7 +2207,7 @@ Steps:
     methods: ["POST"],
     paths: ["/api/v1/courses/[[Course ID]]/modules/[[Module ID]]/items/[[Item ID]]/done"],
     request_kvs: [{}],
-    parameterized_text: 'Task: In the course "[[Course]]," go to the Modules section and mark the content page titled "[[Page]]" as done.'
+    parameterized_text: 'Task: In the course "[[Course]]" go to the Modules section and mark the content page titled "[[Page]]" as done.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2311,13 +2263,7 @@ Steps:
     id: '0455d1fc-9c89-490f-aea1-f6234029f2ba',
     type: 'Information Seeking',
     answer_type: 'Date Time',
-    parameterized_text: 'Task: Verify that you have successfully submitted your "[[Assignment]]" assignment in the "[[Course]]" course by viewing the submission confirmation details. What is the date time that you made your submission?
-
-Steps:
-1. In Canvas, open the "[[Course]]" course.
-2. Click the "Grades" link in the Course Navigation menu.
-3. Click on the assignment named "[[Assignment]]."
-4. View the submission confirmation details to confirm that your assignment has been submitted.'
+    parameterized_text: 'Task: Verify that you have successfully submitted your "[[Assignment]]" assignment in the "[[Course]]" course by viewing the submission confirmation details. What is the date time that you made your submission?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2462,9 +2408,7 @@ Steps:
     id: '8d2b6c85-7bc4-4683-b468-bf85542aa2c7',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: View the peer review rubric assessment and comments left by [[User]] for the assignment "[[Assignment]]" in the course "[[Course]]". How many points did [[User]] give you for the first criteria in the rubric? 
-
-To complete this task, navigate to the "[[Assignment]]" assignment, click the "Show Rubric" link, and review the ratings and comments provided by your peers. If there are multiple peer reviews, use the "Show Assessment By" drop-down menu to view each peer\'s rubric assessment.'
+    parameterized_text: 'Task: View the peer review rubric assessment and comments left by [[User]] for the assignment "[[Assignment]]" in the course "[[Course]]". How many points did [[User]] give you for the first criteria in the rubric?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2578,7 +2522,7 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     "rating": "liked",
     "discussionEntryId": "[[Discussion Reply ID]]"
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]," locate the reply by student "[[User]]" and click the Like icon to like this reply.'
+    parameterized_text: 'Task: In the course "[[Course]]" open the discussion titled "[[Discussion]]" locate the reply by student "[[User]]" and click the Like icon to like this reply.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2615,14 +2559,7 @@ To complete this task, navigate to the "[[Assignment]]" assignment, click the "S
     id: '542dda0b-1dd9-4c1b-86b3-7343786c226c',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: View the rubric results for your submission to the assignment "[[Assignment]]" in the course "[[Course]]". How many points did you recieve for the [[Criteria]] criteria in the rubric? 
-
-Steps:
-
-1. In the Course Navigation for "[[Course]]," click the Grades link.
-2. Locate the "[[Assignment]]" assignment in your Grades list.
-3. Click the Rubric icon next to the "[[Assignment]]" assignment.
-4. Find the [[Criteria]] criteria in rubric and report your score.' 
+    parameterized_text: 'Task: View the rubric results for your submission to the assignment "[[Assignment]]" in the course "[[Course]]". How many points did you recieve for the [[Criteria]] criteria in the rubric?' 
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2721,7 +2658,7 @@ Steps:
     id:'72966af5-5445-4226-8236-e94352fb514b',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: In the course "[[Course]]," open the discussion titled "[[Discussion]]". How many replies are there for this discussion?'
+    parameterized_text: 'Task: In the course "[[Course]]" open the discussion titled "[[Discussion]]". How many replies are there for this discussion?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2765,7 +2702,7 @@ Steps:
     "operationName": "UpdateDiscussionEntryParticipant",
     "reportType": "inappropriate"
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," report a reply in the discussion titled "[[Discussion]]" as inappropriate. Select "inappropriate" as the reason for reporting and submit your report.'
+    parameterized_text: 'Task: In the course "[[Course]]" report a reply in the discussion titled "[[Discussion]]" as inappropriate. Select "inappropriate" as the reason for reporting and submit your report.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2861,16 +2798,7 @@ Steps:
     "message": "<p>Thank you for the clarification!</p>",
     "quotedEntryId": "[[Discussion Reply ID]]"
     }],
-    parameterized_text: 'Task: In the "[[Announcement]]" announcement for the "[[Course]]" course leave a reply by quoting the previous reply and including the text "Thank you for the clarification!" in your response.
-
-Steps:
-1. In the "[[Course]]" course, click the Announcements link in the course navigation.
-2. Click on the announcement titled "[[Announcement]]."
-3. Find a threaded reply under the announcement.
-4. Click the Options icon on the reply you want to quote, then select "Quote Reply."
-5. Ensure the quoted reply is included in your message.
-6. In the Rich Content Editor, type: Thank you for the clarification!
-7. Click the Reply button to post your response.'
+    parameterized_text: 'Task: In the "[[Announcement]]" announcement for the "[[Course]]" course leave a reply by quoting the previous reply and including the text "Thank you for the clarification!" in your response.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3082,7 +3010,7 @@ Steps:
     id: 'aa62cf92-1cdd-4b30-b49c-9f4e8791776f',
     type: 'Information Seeking',
     answer_type: 'Text',
-    parameterized_text: 'Task: View the rubric for the assignment titled "[[Assignment]]" in the course "[[Course]]" by navigating to the Assignments page, clicking on "[[Assignment]]," and locating the rubric displayed below the assignment instructions. What is the heading of the rubric for this assignment?'
+    parameterized_text: 'Task: View the rubric for the assignment titled "[[Assignment]]" in the course "[[Course]]" by navigating to the Assignments page, clicking on "[[Assignment]]" and locating the rubric displayed below the assignment instructions. What is the heading of the rubric for this assignment?'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3266,17 +3194,7 @@ Steps:
     "_type": "form data",
     "submission[body]": "<p>The+most+interesting+concept+I+learned+this+week+was+cognitive+dissonance.</p>"
     }],
-    parameterized_text: 'Task: Submit a text entry for the [[Assignment]] assignment in the course "[[Course]]" by entering the text "The most interesting concept I learned this week was cognitive dissonance."
-
-Steps:
-
-1. In Canvas, navigate to the course "[[Course]]."
-2. Click on the "Assignments" link in the course navigation menu.
-3. Click on the assignment titled "[[Assignment]]."
-4. Click the "Start Assignment" button.
-5. Select the "Text Entry" tab.
-6. In the text box, enter: The most interesting concept I learned this week was cognitive dissonance.
-7. Click the "Submit Assignment" button.'
+    parameterized_text: 'Task: Submit a text entry for the [[Assignment]] assignment in the course "[[Course]]" by entering the text "The most interesting concept I learned this week was cognitive dissonance."'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3311,15 +3229,7 @@ Steps:
     id: 'db729474-de9b-410b-9476-7e1b49775d3a',
     type: 'Information Seeking',
     answer_type: 'Numeric',
-    parameterized_text: 'Task: Check if your instructor has graded your "[[Assignment]]" assignment in the "[[Course]]" course and note the score you received.
-
-Steps:
-
-1. In Canvas, open the "[[Course]]" course.
-2. Click the "Grades" link in the Course Navigation menu.
-3. Look for the "[[Assignment]]" assignment in the list.
-4. If there is a dot next to "[[Assignment]]," note that it has been recently graded.
-5. Record the score displayed in the score column for the "[[Assignment]]" assignment.'
+    parameterized_text: 'Task: Check if your instructor has graded your "[[Assignment]]" assignment in the "[[Course]]" course and note the score you received.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3509,7 +3419,7 @@ then save the changes.'
     paths: ["/api/v1/groups/[[Group ID]]/memberships"],
     request_kvs: [{
     "_method": "POST"}],
-    parameterized_text: 'Task: In the course "[[Course]]," view all available groups, and join the self sign-up group named "[[Group]]."'
+    parameterized_text: 'Task: In the course "[[Course]]" view all available groups, and join the self sign-up group named "[[Group]]"'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3546,18 +3456,7 @@ then save the changes.'
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
     request_kvs: [{
     "question_[[Last Question Index]]": "[[ANY]]"}],
-    parameterized_text: 'Task: Take the "[[Quiz]]" in the "[[Course]]" course, answer all questions, and submit the quiz.
-
-Instructions:
-
-1. In the "[[Course]]" course, click the "Quizzes" link in the course navigation.
-2. Click on the quiz titled "[[Quiz]]."
-3. If prompted, enter the access code "BIO2024" and click the Submit button.
-4. Click the Begin button to start the quiz.
-5. Answer all questions in the quiz.
-6. If you want to review a question later, click the Pin icon next to that question.
-7. When you have answered all questions, click the Submit button.
-8. In the confirmation dialog, click the Submit button again to finalize your submission.'
+    parameterized_text: 'Task: Take the "[[Quiz]]" in the "[[Course]]" course, answer all questions, and submit the quiz.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3597,7 +3496,7 @@ Instructions:
     request_kvs: [{
     "_method": "DELETE"
     }],
-    parameterized_text: 'Task: In the course "[[Course]]," find the announcement titled "[[Announcement]]" in your Course Activity Stream and remove this notification from your activity stream.'
+    parameterized_text: 'Task: In the course "[[Course]]" find the announcement titled "[[Announcement]]" in your Course Activity Stream and remove this notification from your activity stream.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3731,12 +3630,7 @@ Instructions:
     methods: ["POST"],
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/take"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Resume the "[[Quiz]]" in the "[[Course]]" course that you previously started but did not finish. 
-
-Steps:
-1. In the "[[Course]]" course, click the Quizzes link in the course navigation.
-2. Find and click on the "[[Quiz]]."
-3. Click the "Resume Quiz" button to continue the quiz from where you left off.'
+    parameterized_text: 'Task: Resume the "[[Quiz]]" in the "[[Course]]" course that you previously started but did not finish.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -3773,15 +3667,7 @@ Steps:
     methods: ["POST"],
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Submit the "[[Survey]]" in the "[[Course]]" course by answering all questions and submitting your responses.
-
-Steps:
-
-1. In the "[[Course]]" course, click the "Quizzes" link in the course navigation.
-2. Click on the survey titled "[[Survey]]".
-3. Click the "Take the Survey" button.
-4. Answer all the questions in the survey.
-5. Click the "Submit Quiz" button to submit your survey responses.'
+    parameterized_text: 'Task: Submit the "[[Survey]]" in the "[[Course]]" course by answering all questions and submitting your responses.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
