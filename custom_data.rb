@@ -13,8 +13,8 @@ require 'yaml'
 require 'securerandom'
 
 # Path from which course data is loaded when needed.
-# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/gen_data.yaml"
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-6.yaml"
+# $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
 
@@ -1434,14 +1434,14 @@ def create_task_instances(test_course)
     'assignment',
     test_course.assignments, 
     # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
-    lambda{|assignments| assignments.select{|a| (a.submissions.where(user_id: course.logged_in_user).first.nil?)}},
+    lambda{|assignments| assignments.select{|a| (a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?)}},
     task
   ))
 
   task.populate(test_course) {|course, task|
 
     # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submissions.where(user_id: course.logged_in_user).first.nil?)}.first
+    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submissions.where(user_id: course.logged_in_user).first.body.nil?)}.first
 
     if assignment.nil?
       puts "Cannot find assignment for task #{task.id}"
