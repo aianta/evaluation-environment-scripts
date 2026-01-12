@@ -3667,7 +3667,7 @@ then save the changes.'
     methods: ["POST"],
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Submit the "[[Survey]]" in the "[[Course]]" course by answering all questions and submitting your responses.'
+    parameterized_text: 'Task: Submit the "[[Survey]]" survey in the "[[Course]]" course by answering all questions and submitting your responses.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
