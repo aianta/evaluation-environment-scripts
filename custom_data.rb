@@ -1023,7 +1023,7 @@ def create_task_instances(test_course)
         "question_2": "[[ANY]]",
         "question_3": "[[ANY]]"
         }],
-    parameterized_text: 'Task: Take the "[[Quiz]]" in the "[[Course]]" course, answer all questions, flag question 3 for review, and submit the quiz when finished.'
+    parameterized_text: 'Task: Take the "[[Quiz]]" quiz in the "[[Course]]" course, answer all questions, flag question 3 for review, and submit the quiz when finished.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
