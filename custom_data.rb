@@ -3456,7 +3456,7 @@ then save the changes.'
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
     request_kvs: [{
     "question_[[Last Question Index]]": "[[ANY]]"}],
-    parameterized_text: 'Task: Take the "[[Quiz]]" in the "[[Course]]" course, answer all questions, and submit the quiz.'
+    parameterized_text: 'Task: Take the "[[Quiz]]" quiz in the "[[Course]]" course, answer all questions, and submit the quiz.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
