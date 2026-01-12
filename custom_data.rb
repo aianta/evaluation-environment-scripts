@@ -2074,7 +2074,7 @@ def create_task_instances(test_course)
     "editing_roles": "members.public",
     "notify_of_update": "1"
     }],
-    parameterized_text: 'Task: In the "[[Group]]" create a new group page titled "[[Page]]". In the page content, enter the following text: "[[Page Message]]" Set the page so that anyone can edit it, and check the box to notify users that this content has changed. Save the page.'
+    parameterized_text: 'Task: In the "[[Group]]" group create a new group page titled "[[Page]]". In the page content, enter the following text: "[[Page Message]]" Set the page so that anyone can edit it, and check the box to notify users that this content has changed. Save the page.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
