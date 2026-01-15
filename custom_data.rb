@@ -2800,7 +2800,7 @@ def create_task_instances(test_course)
     "message": "<p>Thank you for the clarification!</p>",
     "quotedEntryId": "[[Discussion Reply ID]]"
     }],
-    parameterized_text: 'Task: In the "[[Announcement]]" announcement for the "[[Course]]" course leave a reply by quoting the previous reply and including the text "Thank you for the clarification!" in your response.'
+    parameterized_text: 'Task: In the "[[Announcement]]" announcement for the "[[Course]]" find the reply by [[Author]] that says: "[[Quoted Reply Text]]" and use the Quote Reply feature to respond to them with the text "Thank you for the clarification!".'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2821,10 +2821,14 @@ def create_task_instances(test_course)
 
     AgentTask.announcements << announcement
 
+    last_reply = announcement.discussion_entries.last
+
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Announcement", announcement.title)
+    task.update_initalized_text("Author", last_reply.user.name)
+    task.update_initalized_text("Quoted Reply Text", last_reply.message)
 
-    last_reply = announcement.discussion_entries.last
+    
 
     task.update_answer_key("Discussion ID", announcement.id)
     task.update_answer_key("Discussion Reply ID", last_reply.id )
@@ -2912,9 +2916,9 @@ def create_task_instances(test_course)
 
   task = AgentTask.new({
     id: '98d2e0b9-478c-4eec-b40b-82a61e78ba87',
-    evaluation_parameters: ["Course ID", "Assignment ID", "Submission ID"],
+    evaluation_parameters: ["Course ID", "Assignment ID", "User ID"],
     methods: ["POST"],
-    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[Submission ID]]"],
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"],
     request_kvs: [{
     "_type": "form data",
     "submission[student_entered_score]": "85"
@@ -2951,7 +2955,7 @@ def create_task_instances(test_course)
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Assignment ID", assignment.id)
-    task.update_answer_key("Submission ID", submission.id)
+    task.update_answer_key("User ID", course.logged_in_user.id)
 
   }
 
