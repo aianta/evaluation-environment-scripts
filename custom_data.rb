@@ -2363,7 +2363,7 @@ def create_task_instances(test_course)
     paths: ["/api/v1/groups/[[Group ID]]"],
     request_kvs: [{
     "_method": "PUT",
-    "members": "[[_array_not_contains='[[User ID]]']]"
+    "members[]": "[[_array_not_contains='[[User ID]]']]"
     }],
     parameterized_text: 'Task: As the student group leader of "[[Group]]" in the "[[Course]]" course, remove the member named "[[User]]" from the group. Submit your changes.'
   })
@@ -3192,7 +3192,7 @@ def create_task_instances(test_course)
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions"],
     request_kvs: [{
     "_type": "form data",
-    "submission[body]": "<p>The+most+interesting+concept+I+learned+this+week+was+cognitive+dissonance.</p>"
+    "submission[body]": ["<p>The most interesting concept I learned this week was cognitive dissonance.</p>"]
     }],
     parameterized_text: 'Task: Submit a text entry for the [[Assignment]] assignment in the course "[[Course]]" by entering the text "The most interesting concept I learned this week was cognitive dissonance."'
   })
