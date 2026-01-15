@@ -2066,8 +2066,8 @@ def create_task_instances(test_course)
     paths: ["/api/v1/groups/[[Group ID]]/pages"],
     request_kvs: [{
     "title": "[[Page Title]]",
-    "body": "[[Page Body]]",
-    "editing_roles": "members.public",
+    "body": "[[_includes='[[Page Body]]']]",
+    "editing_roles": "members,public",
     "notify_of_update": "1"
     }],
     parameterized_text: 'Task: In the "[[Group]]" group create a new group page titled "[[Page]]". In the page content, enter the following text: "[[Page Message]]" Set the page so that anyone can edit it, and check the box to notify users that this content has changed. Save the page.'
