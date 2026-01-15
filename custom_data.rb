@@ -1005,7 +1005,7 @@ def create_task_instances(test_course)
   task = AgentTask.new({
     id: '158b7ece-5c61-466f-9447-9ab9e43c0b03',
     type: 'Side-effect',
-    evaluation_parameters: ["Course ID", "Quiz ID"],
+    evaluation_parameters: ["Course ID", "Quiz ID", "3rd Question ID"],
     methods: ["POST","POST","POST"],
     paths: [
       "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/take",
@@ -1014,16 +1014,9 @@ def create_task_instances(test_course)
     ],
     request_kvs: [{},
         {
-        "question_3_marked": "1",
-        "question_1": "[[ANY]]",
-        "question_2": "[[ANY]]",
-        "question_3": "[[ANY]]"
+        "question_[[3rd Question ID]]_marked": ["1"]
         },
-        {
-        "question_1": "[[ANY]]",
-        "question_2": "[[ANY]]",
-        "question_3": "[[ANY]]"
-        }],
+        {}],
     parameterized_text: 'Task: Take the "[[Quiz]]" quiz in the "[[Course]]" course, answer all questions, flag question 3 for review, and submit the quiz when finished.'
   })
 
@@ -1051,6 +1044,7 @@ def create_task_instances(test_course)
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Quiz ID", quiz.id)
+    task.update_answer_key("3rd Question ID", quiz.quiz_questions[2].id)
 
   }
 
@@ -1062,7 +1056,7 @@ def create_task_instances(test_course)
     methods: ["POST"],
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/backup"],
     request_kvs: [{
-      "question_[[Question Index]]": "[[Answer]]"
+      "question_[[Question Index]]": ["[[Answer]]"]
       }],
     parameterized_text: 'Task: In the course "[[Course]]" open the quiz titled "[[Quiz]]" and answer Question [[Question Index]], which is a short answer question, by typing "[[Answer]]" into the provided text box.'
   })
@@ -2921,7 +2915,7 @@ def create_task_instances(test_course)
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"],
     request_kvs: [{
     "_type": "form data",
-    "submission[student_entered_score]": "85"
+    "submission[student_entered_score]": ["85"]
     }],
     parameterized_text: 'Task: In the course "[[Course]]" use the What-If Grades feature to enter a hypothetical score of 85 for the assignment "[[Assignment]]" and view how this affects your total grade.'
   })
