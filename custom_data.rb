@@ -13,7 +13,7 @@ require 'yaml'
 require 'securerandom'
 
 # Path from which course data is loaded when needed.
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-6.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-7.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
@@ -3576,12 +3576,12 @@ then save the changes.'
 
   task = AgentTask.new({
     id: 'd098f836-5e11-4e64-ac4c-55dd100ec323',
-    evaluation_parameters: ["Course ID", "Assignment ID", "Submission ID"],
+    evaluation_parameters: ["Course ID", "Assignment ID", "User ID"],
     methods: ["POST"],
-    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[Submission ID]]"],
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"],
     request_kvs: [{
     "_type": "form data",
-    "submission[comment]": "Thank+you+for+the+feedback!"
+    "submission[comment]": ["Thank you for the feedback!"]
     }],
     parameterized_text: 'Task: View your instructor\'s comments on the "[[Quiz]]" quiz in the "[[Course]]" course and add a comment saying "Thank you for the feedback!" to your quiz submission.'
   })
@@ -3618,7 +3618,7 @@ then save the changes.'
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Assignment ID", quiz.assignment.id)
-    task.update_answer_key("Submission ID", submission.id)
+    task.update_answer_key("User ID", course.logged_in_user.id)
 
   }
 

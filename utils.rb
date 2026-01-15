@@ -1278,6 +1278,10 @@ The student account will be assumed to be the logged in user for this course.
 
 
   def make_rubric(total_points)
+    # Handle case where total points were specified as floating values
+    if total_points.kind_of? Float
+      total_points = total_points.round
+    end
 
     if !total_points.even? # If the total number of points isn't an even number, make it one so that 
       total_points = total_points + 1
