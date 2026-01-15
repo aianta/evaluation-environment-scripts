@@ -11,6 +11,7 @@ require_relative "./utils"
 require 'json'
 require 'yaml'
 require 'securerandom'
+require 'erb'
 
 # Path from which course data is loaded when needed.
 $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-7.yaml"
@@ -1821,14 +1822,15 @@ def create_task_instances(test_course)
 
   task = AgentTask.new({
     id:'279dcf3e-77f5-4a1b-8ced-ebdb8bb7e462',
-    evaluation_parameters: ["Course ID", "Assignment ID", "Submission ID"],
+    # Note: User ID here refers to the id of the target user (the one whose work logged_in_user is reviewing)
+    evaluation_parameters: ["Course ID", "Assignment ID", "User ID"],
     methods: ["GET", "POST"],
-    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[Submission ID]]",
-            "/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[Submission ID]]"
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]",
+            "/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"
     ],
     request_kvs: [{}, {
       "_type": "form data",
-      "submission[comment]": "Great+analysis!+I+especially+liked+your+use+of+recent+data+to+support+your+points."}],
+      "submission[comment]": ["Great analysis! I especially liked your use of recent data to support your points."]}],
     parameterized_text: 'Task: Submit a peer review comment for the discussion "[[Discussion]]" in the course "[[Course]]" by reviewing [[User]]\'s reply and entering the following comment in the comment sidebar: "Great analysis! I especially liked your use of recent data to support your points." Then, click the Save button to complete the peer review.'
   })
 
@@ -1859,7 +1861,7 @@ def create_task_instances(test_course)
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Assignment ID", discussion.assignment.id)
-    task.update_answer_key("Submission ID", assessment.asset.id)
+    task.update_answer_key("User ID", assessment.user.id)
 
   }
 
@@ -2111,12 +2113,12 @@ def create_task_instances(test_course)
 
   task = AgentTask.new({
     id: 'b68ad0fe-8cd4-40b1-ad7f-88b43510da75',
-    evaluation_parameters: ["Course ID", "Submission ID", "Assignment ID"],
+    evaluation_parameters: ["Course ID", "User ID", "Assignment ID"],
     methods: ["POST"],
-    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[Submission ID]]"],
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"],
     request_kvs: [{
     "_type": "form data",
-    "submission[comment]": "[[_includes='Great+feedback+received!']]"
+    "submission[comment]": "[[_includes='Great feedback received!']]"
     }],
     parameterized_text: 'Task: Add a text comment with an emoji to your submission for the assignment "[[Assignment]]" in the course "[[Course]]" saying "Great feedback received!".'
   })
@@ -2152,7 +2154,7 @@ def create_task_instances(test_course)
     submission = assignment.submissions.find_by(user_id: course.logged_in_user.id)
 
     task.update_answer_key("Course ID", course.course.id)
-    task.update_answer_key("Submission ID", submission.id)
+    task.update_answer_key("User ID", course.logged_in_user.id)
     task.update_answer_key("Assignment ID", assignment.id)
   }
 
@@ -3179,7 +3181,7 @@ def create_task_instances(test_course)
     task.update_initalized_text("Announcement", announcement.title)
 
     task.update_answer_key("Course ID", course.course.id)
-    task.update_answer_key("Announcement Title", announcement.title)
+    task.update_answer_key("Announcement Title", ERB::Util.url_encode(announcement.title))
 
   }
 
