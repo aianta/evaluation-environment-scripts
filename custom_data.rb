@@ -2298,10 +2298,10 @@ def create_task_instances(test_course)
   task = AgentTask.new({
     id: 'e0cfbef6-1383-463e-ac40-db871e962295',
     evaluation_parameters: ["Group ID", "Group Name"],
-    methods: ["PUT"],
+    methods: ["POST"],
     paths: ["/api/v1/groups/[[Group ID]]"], 
     request_kvs: [{
-    "name": "[[Group Name]]"
+    "name": ["[[Group Name]]"]
     }],
     parameterized_text: 'Task: As the student group leader of "[[Group 1]]" in the "[[Course]]" course, change your group\'s name to "[[Group 2]]".'
   })
@@ -2456,7 +2456,7 @@ def create_task_instances(test_course)
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[ANY]]"],
     request_kvs: [{
     "_type":"form data",
-    "submission[comment]": "Great+job+but+consider+adding+more+sources+to+support+your+arguments."
+    "submission[comment]": ["Great job but consider adding more sources to support your arguments."]
     }],
     parameterized_text: 'Task: Complete a peer review for the assignment "[[Assignment]]" in the course "[[Course]]" by leaving the following comment in the comment sidebar: "Great job but consider adding more sources to support your arguments." Submit your assessment to finish the peer review.'
   })
