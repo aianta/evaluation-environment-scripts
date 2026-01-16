@@ -546,6 +546,11 @@ class AgentTask
 
     end
 
+    @answer_ids = nil
+    if data[:answer_ids]
+      @answer_ids = data[:answer_ids]
+    end
+
     @methods = nil
     if data[:methods]
       @methods = data[:methods]
@@ -593,6 +598,10 @@ class AgentTask
           "request_kv": @request_kvs[index]
         }
 
+        if !@answer_ids.nil?
+          request["answer_id"] = @answer_ids[index]
+        end
+
         @answer_key << request
 
       end
@@ -618,6 +627,10 @@ class AgentTask
 
     @populate_logic = lambda {yield test_course, self}
 
+
+  end
+
+  def add_alternate_answer()
 
   end
 

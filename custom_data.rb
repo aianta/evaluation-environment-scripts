@@ -962,13 +962,14 @@ def create_task_instances(test_course)
   task = AgentTask.new({
     id: "14fe049e-9db4-497a-97c9-507a2c60d55e",
     type: 'Side-effect',
-    evaluation_parameters: ["Discussion ID"],
-    methods: ["POST"],
-    paths: ["/api/graphql"],
+    answer_ids: [1, 2], # There are two known ways to successfully complete this task. Fullfilling either network request is sufficient.
+    evaluation_parameters: ["Course ID", "Discussion ID"],
+    methods: ["POST", "PUT"],
+    paths: ["/api/graphql", "/api/v1/courses/[[Course ID]]/discussion_topics/[[Discussion ID]]/subscribed"],
     request_kvs: [{
       "operationName": "subscribeToDiscussionTopic",
       "discussionTopicId": "[[Discussion ID]]"
-    }],
+    }, {}],
     parameterized_text: 'Task: Subscribe to the "[[Discussion]]" discussion in the "[[Course]]" course so that you receive notifications when new comments are posted.'
   })
 
@@ -997,6 +998,7 @@ def create_task_instances(test_course)
     task.update_initalized_text("Discussion", discussion.title)
 
     task.update_answer_key("Discussion ID", discussion.id)
+    task.update_answer_key("Course ID", course.course.id)
 
   }
 
