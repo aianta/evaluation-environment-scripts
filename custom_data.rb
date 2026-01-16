@@ -762,12 +762,12 @@ def create_task_instances(test_course)
 
   task = AgentTask.new({
     id: "0be01f7a-0c6e-49c3-af20-52f9b97ef728",
-    evaluation_parameters: ["Course ID", "Assignment ID", "Submission ID"],
+    evaluation_parameters: ["Course ID", "Assignment ID", "User ID"],
     methods: ["POST"],
-    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[Submission ID]]"],
+    paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"],
     request_kvs: [{
       "_type": "form data",
-      "submission[comment]": "Thank+you+for+the+feedback!"
+      "submission[comment]": ["Thank you for the feedback!"]
     }],
     parameterized_text: "Task: View the feedback left by your instructor for the assignment '[[Assignment]]' in the course '[[Course]]', and add a comment saying 'Thank you for the feedback!' using the Feedback sidebar."
   })
@@ -810,7 +810,7 @@ def create_task_instances(test_course)
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Assignment ID", assignment.id)
-    task.update_answer_key("Submission ID", submission.id)
+    task.update_answer_key("User ID", course.logged_in_user.id)
 
   }
 
