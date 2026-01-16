@@ -14,7 +14,7 @@ require 'securerandom'
 require 'erb'
 
 # Path from which course data is loaded when needed.
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-7.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-6.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
@@ -1918,7 +1918,7 @@ def create_task_instances(test_course)
     methods: ["DELETE"],
     paths: ["/api/v1/groups/[[Group ID]]/pages/[[Page Slug]]"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Delete the page titled "[[Page]]" from the "[[Group]]" on your [[Course]] course in Canvas.'
+    parameterized_text: 'Task: Delete the page titled "[[Page]]" from the "[[Group]]" group in your [[Course]] course in Canvas.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
