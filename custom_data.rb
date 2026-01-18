@@ -1865,9 +1865,9 @@ def create_task_instances(test_course)
 
   task = AgentTask.new({
     id: '29d80dd0-2506-41bc-ad55-40db3359b84c',
-    evaluation_parameters: ["Course ID", "Last Question ID", "Quiz ID", "Submission ID"],
-    methods: ["POST", "POST"],
-    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[Submission ID]]/record_answer?next_question_path=/courses/[[Course ID]]/quizzes/[[Quiz ID]]/take/questions/[[Last Question ID]]",
+    evaluation_parameters: ["Course ID", "Last Question ID", "Quiz ID"],
+    methods: ["POST", "POST"],                                                            
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions%2F[[Question ID]]",
       "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"
     ],
     request_kvs: [{}, {}],
@@ -1906,7 +1906,6 @@ def create_task_instances(test_course)
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Last Question ID", quiz.quiz_questions.last.id )
     task.update_answer_key("Quiz ID", quiz.id)
-    task.update_answer_key("Submission ID", submission.id)
 
   }
 
@@ -2205,7 +2204,7 @@ def create_task_instances(test_course)
     methods: ["POST"],
     paths: ["/api/v1/courses/[[Course ID]]/modules/[[Module ID]]/items/[[Item ID]]/done"],
     request_kvs: [{}],
-    parameterized_text: 'Task: In the course "[[Course]]" go to the Modules section and mark the content page titled "[[Page]]" as done.'
+    parameterized_text: 'Task: In the course "[[Course]]" go to the Modules section and find the module called "[[Module Name]]". Under that module mark the content page titled "[[Page]]" as done.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
@@ -2249,6 +2248,7 @@ def create_task_instances(test_course)
 
     task.update_initalized_text("Course", course.course.name)
     task.update_initalized_text("Page", page.title)
+    task.update_initalized_text("Module Name", _module.name)
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Module ID", _module.id)
