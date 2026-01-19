@@ -1867,7 +1867,7 @@ def create_task_instances(test_course)
     id: '29d80dd0-2506-41bc-ad55-40db3359b84c',
     evaluation_parameters: ["Course ID", "Last Question ID", "Quiz ID"],
     methods: ["POST", "POST"],                                                            
-    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions%2F[[Question ID]]",
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions%2F[[Last Question ID]]",
       "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"
     ],
     request_kvs: [{}, {}],
