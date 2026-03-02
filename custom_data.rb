@@ -14,7 +14,7 @@ require 'securerandom'
 require 'erb'
 
 # Path from which course data is loaded when needed.
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-6.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-7.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
@@ -3632,7 +3632,7 @@ then save the changes.'
     methods: ["POST"],
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/take"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Resume the "[[Quiz]]" in the "[[Course]]" course that you previously started but did not finish.'
+    parameterized_text: 'Task: Resume the "[[Quiz]]" in the "[[Course]]" quiz course that you previously started but did not finish.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
