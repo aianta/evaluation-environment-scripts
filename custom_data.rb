@@ -3632,7 +3632,7 @@ then save the changes.'
     methods: ["POST"],
     paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/take"],
     request_kvs: [{}],
-    parameterized_text: 'Task: Resume the "[[Quiz]]" in the "[[Course]]" quiz course that you previously started but did not finish.'
+    parameterized_text: 'Task: Resume the "[[Quiz]]" quiz in the "[[Course]]" course that you previously started but did not finish.'
   })
 
   resource_manifest.add_resource_request(ResourceRequest.new(
