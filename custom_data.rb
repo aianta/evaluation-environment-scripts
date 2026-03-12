@@ -3665,10 +3665,11 @@ then save the changes.'
 
   task = AgentTask.new({
     id: 'f36e03d8-3c1a-4223-ad61-8aca0b4546fb',
-    evaluation_parameters: ["Course ID", "Quiz ID"],
-    methods: ["POST"],
-    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
-    request_kvs: [{}],
+    evaluation_parameters: ["Course ID", "Quiz ID", "Last Question ID"],
+    methods: ["POST", "POST"],
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions%2F[[Last Question ID]]",
+    "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
+    request_kvs: [{}, {}],
     parameterized_text: 'Task: Submit the "[[Survey]]" survey in the "[[Course]]" course by answering all questions and submitting your responses.'
   })
 
@@ -3695,6 +3696,7 @@ then save the changes.'
 
     task.update_answer_key("Course ID", course.course.id)
     task.update_answer_key("Quiz ID", quiz.id)
+    task.update_answer_key("Last Question ID", quiz.quiz_questions.last.id)
 
   }
 
