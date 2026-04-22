@@ -14,7 +14,7 @@ require 'securerandom'
 require 'erb'
 
 # Path from which course data is loaded when needed.
-$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-7.yaml"
+$TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/odox-7-2032.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/test_data.yaml"
 # $TEST_DATA_PATH = "/usr/src/app/spec/fixtures/data_generation/output.yaml"
 
@@ -767,7 +767,7 @@ def create_task_instances(test_course)
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[User ID]]"],
     request_kvs: [{
       "_type": "form data",
-      "submission[comment]": ["Thank you for the feedback!"]
+      "submission[comment]": "[[_includes='Thank you for the feedback!']]"
     }],
     parameterized_text: "Task: View the feedback left by your instructor for the assignment '[[Assignment]]' in the course '[[Course]]', and add a comment saying 'Thank you for the feedback!' using the Feedback sidebar."
   })
@@ -919,7 +919,7 @@ def create_task_instances(test_course)
     methods: ["POST"],
     request_kvs: [
       {
-      "message": "<p>[[Announcement Message]]</p>",
+      "message": "[[_includes='<p>[[Announcement Message]]</p>']]",
       "title": "[[Announcement Title]]"
       }],
     parameterized_text: 'Task: In your group "[[Group]]" for the course [[Course]], create a new announcement with the title "[[Announcement]]" and the following content: "[[Announcement Message]]" then publish it.'
@@ -1025,14 +1025,14 @@ def create_task_instances(test_course)
   resource_manifest.add_resource_request(ResourceRequest.new(
     'quiz',
     test_course.quizzes,
-    lambda{|quizzes| quizzes.select{|q| q.quiz_questions.length >= 3}},
+    lambda{|quizzes| quizzes.select{|q| (q.quiz_questions.length >= 3) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}},
     task
   ))
   
   task.populate(test_course) { |course, task|
 
     # Find a quiz with at least 3 questions
-    quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q) && q.quiz_questions.length >= 3}.first
+    quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q) && (q.quiz_questions.length >= 3) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}.first
 
     if quiz.nil? 
       puts "Cannot find quiz for task #{task.id}"
@@ -1077,7 +1077,7 @@ def create_task_instances(test_course)
 
       quiz = course_data["quizzes"].select {|q| (!used_quiz_names.include? q["title"]) && (q["questions"].length >= 2) && (!q["questions"].select{|question| question["question_type"] == "short_answer_question"}.first.nil?) && (!q["one_question_at_a_time"])}.first
 
-      quizzes.select{|q| q.title == quiz["title"]}
+      quizzes.select{|q| (q.title == quiz["title"]) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}
 
     },
     task
@@ -1093,7 +1093,7 @@ def create_task_instances(test_course)
     used_quiz_names = []
     AgentTask.quizzes.each {|q| used_quiz_names << q.title}
 
-    quiz = course_data["quizzes"].select {|q| (!used_quiz_names.include? q["title"]) && (q["questions"].length >= 2) && (!q["questions"].select{|question| question["question_type"] == "short_answer_question"}.first.nil?) && (!q["one_question_at_a_time"])}.first
+    quiz = course_data["quizzes"].select {|q| (!used_quiz_names.include? q["title"]) && (q["questions"].length >= 2) && (!q["questions"].select{|question| question["question_type"] == "short_answer_question"}.first.nil?) && (!q["one_question_at_a_time"]) }.first
 
     if quiz.nil?
       puts "Could not find quiz for task #{task.id}"
@@ -1111,7 +1111,7 @@ def create_task_instances(test_course)
     task.update_initalized_text("Answer", answer["text"])
 
 
-    _quiz = course.quizzes.select{|q| q.title == quiz["title"]}.first
+    _quiz = course.quizzes.select{|q| (q.title == quiz["title"]) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}.first
     AgentTask.quizzes << _quiz # register the quiz as being used. 
 
     task.update_answer_key("Course ID", course.course.id)
@@ -1212,7 +1212,7 @@ def create_task_instances(test_course)
     paths: ["/api/v1/courses/[[Course ID]]/users", "/api/graphql"],
     request_kvs: [{},{
     "operationName": "CreateConversation",
-    "body": "Hi, I have a question about the lab assignment. Can we discuss it?",
+    "body": "[[_includes='Hi, I have a question about the lab assignment. Can we discuss it?']]",
     "subject": "Hi!",
     "recipients": ["[[User ID]]"]
     }],
@@ -1414,47 +1414,47 @@ def create_task_instances(test_course)
 
   tasks << task
 
+  ## April 22 2026, disabled because it is too difficult to control what is visible on a student's to do list and therefore ensure the task is always possible.
+  # task = AgentTask.new({
+  #   id: '382d57c2-b2e5-4024-9c05-9c5d195d2a27',
+  #   evaluation_parameters: ["Assignment ID"],
+  #   methods: ["POST"],
+  #   paths: ["/api/v1/planner/overrides"],
+  #   request_kvs: [{
+  #   "marked_complete": true,
+  #   "plannable_id": "[[Assignment ID]]"
+  #   }],
+  #   parameterized_text: 'Task: In the course "[[Course]]" remove the assignment with the title "[[Assignment]]" from your list of To Dos.'
+  # })
 
-  task = AgentTask.new({
-    id: '382d57c2-b2e5-4024-9c05-9c5d195d2a27',
-    evaluation_parameters: ["Assignment ID"],
-    methods: ["POST"],
-    paths: ["/api/v1/planner/overrides"],
-    request_kvs: [{
-    "marked_complete": true,
-    "plannable_id": "[[Assignment ID]]"
-    }],
-    parameterized_text: 'Task: In the course "[[Course]]" remove the assignment with the title "[[Assignment]]" from your list of To Dos.'
-  })
+  # resource_manifest.add_resource_request(ResourceRequest.new(
+  #   'assignment',
+  #   test_course.assignments, 
+  #   # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
+  #   lambda{|assignments| assignments.select{|a| (a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?)}},
+  #   task
+  # ))
 
-  resource_manifest.add_resource_request(ResourceRequest.new(
-    'assignment',
-    test_course.assignments, 
-    # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
-    lambda{|assignments| assignments.select{|a| (a.submissions.where(user_id: test_course.logged_in_user).first.body.nil?)}},
-    task
-  ))
+  # task.populate(test_course) {|course, task|
 
-  task.populate(test_course) {|course, task|
+  #   # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
+  #   assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submissions.where(user_id: course.logged_in_user).first.body.nil?)}.first
 
-    # Don't select an assignment for which the user has already made a submission as it will no longer appear in the to do list.
-    assignment = course.assignments.select{|a| (!AgentTask.assignments.include? a) && (a.submissions.where(user_id: course.logged_in_user).first.body.nil?)}.first
+  #   if assignment.nil?
+  #     puts "Cannot find assignment for task #{task.id}"
+  #     return 
+  #   end
 
-    if assignment.nil?
-      puts "Cannot find assignment for task #{task.id}"
-      return 
-    end
+  #   AgentTask.assignments << assignment
 
-    AgentTask.assignments << assignment
+  #   task.update_initalized_text("Course", course.course.name)
+  #   task.update_initalized_text("Assignment", assignment.title)
 
-    task.update_initalized_text("Course", course.course.name)
-    task.update_initalized_text("Assignment", assignment.title)
+  #   task.update_answer_key("Assignment ID", assignment.id)
 
-    task.update_answer_key("Assignment ID", assignment.id)
+  # }
 
-  }
-
-  tasks << task
+  # tasks << task
 
   task = AgentTask.new({
     id: '5718e37a-b1d1-4ec9-a223-7fd262419682',
@@ -1782,7 +1782,7 @@ def create_task_instances(test_course)
     request_kvs: [{
     "operationName": "CreateDiscussionEntry",
     "discussionTopicId": "[[Announcement ID]]",
-    "message": "[[_includes='@[[User Name]]']]"
+    "message": "[[_includes='[[User Name]]']]"
     }],
     parameterized_text: 'Task: In the course "[[Course]]" reply to the announcement titled "[[Announcement]]" by posting the message "Great announcement, @[[User]]! Looking forward to this week." and mention the user [[User]] in your reply.'
   })
@@ -1826,7 +1826,7 @@ def create_task_instances(test_course)
     ],
     request_kvs: [{}, {
       "_type": "form data",
-      "submission[comment]": ["Great analysis! I especially liked your use of recent data to support your points."]}],
+      "submission[comment]": "[[_includes='Great analysis! I especially liked your use of recent data to support your points.']]"}],
     parameterized_text: 'Task: Submit a peer review comment for the discussion "[[Discussion]]" in the course "[[Course]]" by reviewing [[User]]\'s reply and entering the following comment in the comment sidebar: "Great analysis! I especially liked your use of recent data to support your points." Then, click the Save button to complete the peer review.'
   })
 
@@ -1877,7 +1877,7 @@ def create_task_instances(test_course)
   resource_manifest.add_resource_request(ResourceRequest.new(
     'quiz',
     test_course.quizzes,
-    lambda{|quizzes| quizzes.select{|q| q.one_question_at_a_time}},
+    lambda{|quizzes| quizzes.select{|q| (q.one_question_at_a_time) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}},
     task
     ))
 
@@ -1889,7 +1889,7 @@ def create_task_instances(test_course)
       puts "Quiz: #{q.title} - one_question_at_a_time? #{q.one_question_at_a_time}"
     end
     
-    (!AgentTask.quizzes.include? q) && q.one_question_at_a_time}.first
+    (!AgentTask.quizzes.include? q) && (q.one_question_at_a_time) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}.first
 
     if quiz.nil?
       puts "Cannot find quiz for task #{task.id}"
@@ -2299,11 +2299,14 @@ def create_task_instances(test_course)
 
   task = AgentTask.new({
     id: 'e0cfbef6-1383-463e-ac40-db871e962295',
+    answer_ids: [1,2], # There are two known ways to successfully complete this task.
     evaluation_parameters: ["Group ID", "Group Name"],
-    methods: ["POST"],
-    paths: ["/api/v1/groups/[[Group ID]]"], 
+    methods: ["POST", "PUT"],
+    paths: ["/api/v1/groups/[[Group ID]]", "/api/v1/groups/[[Group ID]]"], 
     request_kvs: [{
     "name": ["[[Group Name]]"]
+    }, {
+      "name": "[[Group Name]]"
     }],
     parameterized_text: 'Task: As the student group leader of "[[Group 1]]" in the "[[Course]]" course, change your group\'s name to "[[Group 2]]".'
   })
@@ -2458,7 +2461,7 @@ def create_task_instances(test_course)
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions/[[ANY]]"],
     request_kvs: [{
     "_type":"form data",
-    "submission[comment]": ["Great job but consider adding more sources to support your arguments."]
+    "submission[comment]": "[[_array_contains='Great job but consider adding more sources to support your arguments.']]"
     }],
     parameterized_text: 'Task: Complete a peer review for the assignment "[[Assignment]]" in the course "[[Course]]" by leaving the following comment in the comment sidebar: "Great job but consider adding more sources to support your arguments." Submit your assessment to finish the peer review.'
   })
@@ -2793,7 +2796,7 @@ def create_task_instances(test_course)
     request_kvs: [{
     "operationName": "CreateDiscussionEntry",
     "discussionTopicId": "[[Discussion ID]]",
-    "message": "<p>Thank you for the clarification!</p>",
+    "message": "[[_includes='<p>Thank you for the clarification!</p>']]",
     "quotedEntryId": "[[Discussion Reply ID]]"
     }],
     parameterized_text: 'Task: In the "[[Announcement]]" announcement for the "[[Course]]" find the reply by [[Author]] that says: "[[Quoted Reply Text]]" and use the Quote Reply feature to respond to them with the text "Thank you for the clarification!".'
@@ -3194,7 +3197,7 @@ def create_task_instances(test_course)
     paths: ["/courses/[[Course ID]]/assignments/[[Assignment ID]]/submissions"],
     request_kvs: [{
     "_type": "form data",
-    "submission[body]": ["<p>The most interesting concept I learned this week was cognitive dissonance.</p>"]
+    "submission[body]": "[[_includes='<p>The most interesting concept I learned this week was cognitive dissonance.</p>']]"
     }],
     parameterized_text: 'Task: Submit a text entry for the [[Assignment]] assignment in the course "[[Course]]" by entering the text "The most interesting concept I learned this week was cognitive dissonance."'
   })
@@ -3273,7 +3276,7 @@ def create_task_instances(test_course)
     methods: ["PUT"],
     paths: ["/api/v1/groups/[[Group ID]]/discussion_topics/[[Discussion ID]]"],
     request_kvs: [{
-    "message": "<p>Our first group meeting will be held on Friday at 3 PM in the atrium.</p>"
+    "message": "[[_includes='<p>Our first group meeting will be held on Friday at 3 PM in the atrium.</p>']]"
     }],
     parameterized_text: 'Task: Edit the announcement titled "[[Announcement]]" in the group [[Group]] in the [[Course]] course by changing the content to "Our first group meeting will be held on Friday at 3 PM in the atrium." Then, click the Save button to save your changes.'
   })
@@ -3464,13 +3467,13 @@ then save the changes.'
   resource_manifest.add_resource_request(ResourceRequest.new(
     'quiz',
     test_course.quizzes,
-    lambda{|quizzes| quizzes.select{true}},
+    lambda{|quizzes| quizzes.select{|q| (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}},
     task
   ))
 
   task.populate(test_course) {|course, task|
 
-    quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q)}.first
+    quiz = course.quizzes.select{|q| (!AgentTask.quizzes.include? q) && (q.quiz_submissions.select{|qs| (qs.user == test_course.logged_in_user) && (qs.workflow_state == 'untaken')}.first.nil?)}.first
 
     if quiz.nil?
       puts "Cannot find quiz for task #{task.id}"
@@ -3676,7 +3679,7 @@ then save the changes.'
   resource_manifest.add_resource_request(ResourceRequest.new(
     'quiz',
     test_course.quizzes,
-    lambda{|quizzes| quizzes.select{|q| (q.quiz_type == 'survey')}},
+    lambda{|quizzes| quizzes.select{|q| (q.quiz_type == 'survey') && (q.one_question_at_a_time)}},
     task
   ))
 
