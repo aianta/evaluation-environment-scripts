@@ -1867,7 +1867,7 @@ def create_task_instances(test_course)
     id: '29d80dd0-2506-41bc-ad55-40db3359b84c',
     evaluation_parameters: ["Course ID", "Last Question ID", "Quiz ID"],
     methods: ["POST", "POST"],                                                            
-    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions%2F[[Last Question ID]]",
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions[[ANY]]",
       "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"
     ],
     request_kvs: [{}, {}],
@@ -3670,7 +3670,7 @@ then save the changes.'
     id: 'f36e03d8-3c1a-4223-ad61-8aca0b4546fb',
     evaluation_parameters: ["Course ID", "Quiz ID", "Last Question ID"],
     methods: ["POST", "POST"],
-    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions%2F[[Last Question ID]]",
+    paths: ["/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions/[[ANY]]/record_answer?next_question_path=%2Fcourses%2F[[Course ID]]%2Fquizzes%2F[[Quiz ID]]%2Ftake%2Fquestions[[ANY]]",
     "/courses/[[Course ID]]/quizzes/[[Quiz ID]]/submissions"],
     request_kvs: [{}, {}],
     parameterized_text: 'Task: Submit the "[[Survey]]" survey in the "[[Course]]" course by answering all questions and submitting your responses.'
